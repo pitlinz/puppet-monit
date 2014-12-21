@@ -10,7 +10,7 @@
 #
 # Actions:
 #   The following actions gets taken by this defined type:
-#    - creates /etc/monit/conf.d/namevar.monitrc as root:root mode 0400 based on _template_
+#    - creates /etc/monit/conf.d/namevar.conf as root:root mode 0400 based on _template_
 #
 # Requires:
 #   - Package["monit"]
@@ -21,6 +21,7 @@
 #     pidfile     => "/var/run/sshd.pid",
 #     start       => "/etc/init.d/ssh start",
 #     stop        => "/etc/init.d/ssh stop",
+#     depends_on  => undef
 #     customlines => ["if failed port 22 then restart",
 #                     "if 2 restarts within 3 cycles then timeout"]
 #   }
@@ -32,8 +33,9 @@ define monit::check::process($ensure=present, $process=$name,
                              $start_extras="",
                              $stop="/etc/init.d/$name stop",
                              $stop_extras="",
-                             $customlines="") {
-	file {"/etc/monit/conf.d/$name.monitrc":
+                             $depends_on=[],
+                             $customlines=[]) {
+	file {"/etc/monit/conf.d/process_$name.conf":
 		ensure  => $ensure,
 		owner   => "root",
 		group   => "root",

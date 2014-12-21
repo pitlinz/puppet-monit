@@ -1,0 +1,17 @@
+# Configuration snippet for <%= name %>
+# 
+# This file is handled by puppet, all local modifications will be lost
+
+check file <%= name %>
+  with path "<%= filepath %>"
+<% if @start -%>
+  start program = "<%= start %>" <%= start_extras %>
+<% end -%>
+<% if @stop -%>
+  stop program  = "<%= stop %>" <%= stop_extras %>
+<% end -%>
+<% if @customlines.size != 0 then -%>
+	<% customlines.to_a.each do |line| -%>
+	  <%= line %>
+	<% end -%>
+<% end -%>  

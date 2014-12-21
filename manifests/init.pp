@@ -15,7 +15,7 @@
 # $monit_alert="someone@example.org"
 # $monit_mailserver="mail.example.org"
 # $monit_pool_interval="120"
-# 
+#
 # include monit
 #
 # The following is a list of the currently available variables:
@@ -43,6 +43,7 @@
 
 class monit {
 
+  notice( "checking monit for : $fqdn" )
 
 	# The monit_secret is used with the fqdn of the host to make a
 	# password for the monit http server.
@@ -52,32 +53,33 @@ class monit {
 	# variable "$monit_alert" in your node specification.
 	$monit_default_alert="root@localhost"
 
-        # How often should the daemon pool? Interval in seconds.
-        case $monit_pool_interval {
-          '': { $monit_pool_interval = '120' }
-        }
+  # How often should the daemon pool? Interval in seconds.
+  case $monit_pool_interval {
+    '': { $monit_pool_interval = '60' }
+  }
 
-        # Should the httpd daemon be enabled, or not? By default it is not
-        case $monit_enable_httpd {
-          '': { $monit_enable_httpd = 'no' }
-        }
+  # Should the httpd daemon be enabled, or not? By default it is not
+  case $monit_enable_httpd {
+    '': { $monit_enable_httpd = 'no' }
+  }
+
 	# The package
 	package { "monit":
 		ensure => installed,
 	}
-	
+
 	# The service
 	service { "monit":
 		ensure  => running,
 		require => Package["monit"],
 	}
-	
+
 	# How to tell monit to reload its configuration
 	exec { "monit reload":
-		command     => "/usr/sbin/monit reload",
+		command     => "/usr/bin/monit reload",
 		refreshonly => true,
 	}
-	
+
 	# Default values for all file resources
 	File {
 		owner   => "root",
@@ -86,7 +88,7 @@ class monit {
 		notify  => Exec["monit reload"],
 		require => Package["monit"],
 	}
-	
+
 	# The main configuration directory, this should have been provided by
 	# the "monit" package, but we include it just to be sure.
 	file { "/etc/monit":
@@ -95,7 +97,7 @@ class monit {
 	}
 
 	# The configuration snippet directory.  Other packages can put
-	# *.monitrc files into this directory, and monit will include them.
+	# *.conf files into this directory, and monit will include them.
 	file { "/etc/monit/conf.d":
 			ensure  => directory,
 			mode    => 0700,
@@ -103,22 +105,62 @@ class monit {
 
 	# The main configuration file
 	file { "/etc/monit/monitrc":
+    owner   => "root",
+    group   => "root",
+    mode    => 0400,
 		content => template("monit/monitrc.erb"),
 	}
 
+  # system check
+  $load1Alarm = $processorcount ? {
+    2 => 8,
+    3 => 12,
+    4 => 16,
+    5 => 20,
+    6 => 24,
+    7 => 28,
+    8 => 32,
+    default => 4,
+  }
+
+  $load5Alarm = $processorcount ? {
+    2 => 16,
+    3 => 24,
+    4 => 32,
+    5 => 40,
+    6 => 48,
+    7 => 56,
+    8 => 64,
+    default => 8,
+  }
+
+  file { "/etc/monit/conf.d/system.conf":
+    content => template("monit/check_system.erb"),
+  }
+
 	# Monit is disabled by default on debian / ubuntu
 	case $operatingsystem {
-		"debian": {
+		debian, ubuntu: {
 			file { "/etc/default/monit":
-				content => "startup=1\nCHECK_INTERVALS=${monit_pool_interval}\n",
+				content => template("monit/etc_default_monit.erb"),
 				before  => Service["monit"]
 			}
 		}
 	}
 
-	# A template configuration snippet.  It would need to be included,
-	# since monit's "include" statement cannot handle an empty directory.
-	monit::snippet{ "monit_template":
-		source => "puppet://$server/modules/monit/template.monitrc",
-	}
+
+  file { "/etc/monit/scripts/":
+    ensure => "directory",
+    owner   => "root",
+    group   => "root",
+    mode    => 0755,
+  }
+
+  file { "/var/lib/monit/":
+    ensure => "directory",
+    owner   => "root",
+    group   => "root",
+    mode    => 0755,
+  }
+
 }

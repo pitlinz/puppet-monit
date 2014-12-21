@@ -2,10 +2,8 @@
 # 
 # This file is handled by puppet, all local modifications will be lost
 
-check process <%= name %>
-  with pidfile "<%= pidfile %>"
-	start program = "<%= start %>" <%= start_extras %>
-	stop program  = "<%= stop %>" <%= stop_extras %>
+check program <%= name %>
+  with path "<%= scriptpath %>"
 <% if @depends_on.size != 0 then -%>
 	<% depends_on.to_a.each do |othercheck| -%>
 		depends on <%= othercheck %>

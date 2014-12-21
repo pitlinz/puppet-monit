@@ -1,0 +1,14 @@
+# Configuration snippet for <%= fqdn %>
+#
+# source <%= hostname %>
+# 
+# This file is handled by puppet, all local modifications will be lost
+
+check system  <%= fqdn %>
+    if loadavg (1min) > 8 then alert
+    if loadavg (5min) > 6 then alert
+    if memory usage > 80% then alert
+    if swap usage > 50% then alert
+    if cpu usage (user) > 90% then alert
+    if cpu usage (system) > 70% then alert
+    if cpu usage (wait) > 50% then alert

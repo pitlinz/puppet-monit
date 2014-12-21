@@ -1,0 +1,25 @@
+#!/bin/bash
+
+. /etc/environment
+
+NOFPROC=`cat /proc/drbd | grep -ci Inconsistent`
+echo "$NOFPROC volume(s) inconsistent"
+
+if [ $NOFPROC -gt 0 ]; then
+	exit -1
+fi
+
+NOFPROC=`cat /proc/drbd | grep -ci DUnknown`
+echo "$NOFPROC volume(s) with unknown state"
+
+if [ $NOFPROC -gt 0 ]; then
+	exit -2
+fi
+
+NOFPROC=`cat /proc/drbd | grep -ci Diskless`
+echo "$NOFPROC volume(s) with diskless state"
+
+if [ $NOFPROC -gt 0 ]; then
+	exit -3
+fi
+
