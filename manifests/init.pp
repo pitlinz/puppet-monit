@@ -41,26 +41,43 @@
 #                             Default: 120
 #
 
-class monit {
+class monit(
+  $alert          = '',
+  $enable_httpd   = 'no',
+  $http_port      = '2812',
+  $mailserver     = ['localhost'],
+  $pool_interval  = 120,
+  $start_delay    = 240,
+  $secret         = '',  
+  $mmoniturl      = ''  
+) {
 
   notice( "checking monit for : $fqdn" )
-
-	# The monit_secret is used with the fqdn of the host to make a
-	# password for the monit http server.
-	$monit_default_secret="This is not very secret, is it?"
-
-	# The default alert recipient.  You can override this by setting the
-	# variable "$monit_alert" in your node specification.
-	$monit_default_alert="root@localhost"
+  
+  # alert email
+  case $alert {
+    '': {$monit_alert = 'root@localhost'}
+    default: {$monit_alert = $alert}
+  }
 
   # How often should the daemon pool? Interval in seconds.
-  case $monit_pool_interval {
-    '': { $monit_pool_interval = '60' }
+  case $pool_interval {
+    '': { $monit_pool_interval = '120' }
+    default: { $monit_pool_interval = $pool_interval}
   }
 
   # Should the httpd daemon be enabled, or not? By default it is not
-  case $monit_enable_httpd {
+  case $enable_httpd {
     '': { $monit_enable_httpd = 'no' }
+    default: { 
+      $monit_enable_httpd = $enable_httpd
+    }
+  }
+  
+  # monit secret for http access
+  case $secret {
+    '': { $monit_secret = ''}
+    default: { $monit_secret = $secret }
   }
 
 	# The package
@@ -84,7 +101,7 @@ class monit {
 	File {
 		owner   => "root",
 		group   => "root",
-		mode    => 0400,
+		mode    => "0400",
 		notify  => Exec["monit reload"],
 		require => Package["monit"],
 	}
@@ -93,21 +110,21 @@ class monit {
 	# the "monit" package, but we include it just to be sure.
 	file { "/etc/monit":
 			ensure  => directory,
-			mode    => 0700,
+			mode    => "0700",
 	}
 
 	# The configuration snippet directory.  Other packages can put
 	# *.conf files into this directory, and monit will include them.
 	file { "/etc/monit/conf.d":
 			ensure  => directory,
-			mode    => 0700,
+			mode    => "0700",
 	}
 
 	# The main configuration file
 	file { "/etc/monit/monitrc":
     owner   => "root",
     group   => "root",
-    mode    => 0400,
+    mode    => "0400",
 		content => template("monit/monitrc.erb"),
 	}
 
@@ -153,14 +170,14 @@ class monit {
     ensure => "directory",
     owner   => "root",
     group   => "root",
-    mode    => 0755,
+    mode    => "0755",
   }
 
   file { "/var/lib/monit/":
     ensure => "directory",
     owner   => "root",
     group   => "root",
-    mode    => 0755,
+    mode    => "0755",
   }
 
 }
