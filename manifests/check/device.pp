@@ -31,7 +31,7 @@ define monit::check::device($ensure=present,
     ensure  => $ensure,
     owner   => "root",
     group   => "root",
-    mode    => 0400,
+    mode    => "0400",
     content => template("monit/check_device.monitrc.erb"),
     notify  => Service["monit"],
   }

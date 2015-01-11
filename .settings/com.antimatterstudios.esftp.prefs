@@ -1,0 +1,11 @@
+Create\ Empty\ Directories=true
+Password=pUpp3t@w4c
+Recurse\ Subdirectories=true
+Save\ Password=true
+Site\ Root=/etc/puppet/modules/monit
+Username=puppet
+eclipse.preferences.version=1
+port=2200
+protocol=0
+server=kvm1.w4c.at
+timeout=30

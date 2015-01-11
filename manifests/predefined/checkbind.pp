@@ -1,13 +1,18 @@
-# Define: monit::predefined::checksshd
-# Creates a monit check for sshd
+# Define: monit::predefined::checkbind
+# Creates a monit check for bind
 #
 # Parameters:
-#   sshport   - port used by sshd
+#   listenip    - the ip on which bind is listen
+#   listenport  - the port on which bind is listen
 #
 # Actions:
 #   The following actions gets taken by this defined type:
+#
+#
 define monit::predefined::checkbind(
-  $ensure=present,
+  $ensure     = present,
+  $listenip   = '127.0.0.1',
+  $listenport = '53'
 ) {
 
   monit::check::file{"named_conf":
@@ -33,8 +38,8 @@ define monit::predefined::checkbind(
     start       => "/etc/init.d/bind9 start",
     stop        => "/etc/init.d/bind9 stop",
     depends_on  => ["named_conf","named_rc"],
-    customlines => ["if failed host 127.0.0.1 port 53 type tcp protocol dns then restart",
-                    "if failed host 127.0.0.1 port 53 type udp protocol dns then restart",
+    customlines => ["if failed host ${listenip} port ${listenport} type tcp protocol dns then restart",
+                    "if failed host ${listenip} port ${listenport} type udp protocol dns then restart",
                     "if 5 restarts within 5 cycles then timeout"]
   }
 }
