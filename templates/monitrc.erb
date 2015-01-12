@@ -23,7 +23,7 @@ set logfile /var/log/monit.log
 # set idfile /var/.monit.id
 set idfile /var/lib/monit/id
              
-             #
+#
 ## Set the location of the Monit state file which saves monitoring states
 ## on each cycle. By default the file is placed in $HOME/.monit.state. If
 ## the state file is stored on a persistent filesystem, Monit will recover
@@ -54,19 +54,20 @@ set alert <%= has_variable?("monit_alert") ? monit_alert : monit_default_alert %
 		end
 		%>
 		<%# END functions %>
-	set httpd port <%= has_variable?("monit_httpd_port") ? monit_httpd_port : "2812" %> and
-    	allow monit:<%= password %>
+set httpd port <%= has_variable?("monit_httpd_port") ? monit_httpd_port : "2812" %> and
+	allow monit:<%= password %>
 	<%= has_variable?("monit_httpd_address") ? "use address ${monit_httpd_address}" : "" %>
 	<%- end -%>	    
 <%- end -%>
 
-<% if @mailserver.size != 0 then -%> set mailserver 
+<%- if @mailserver.size != 0 then -%> 
+set mailserver 
 	<% mailserver.to_a.each do |server| -%>
 		<%= server %>
 	<% end -%>	
-<% else %> 
-	set mailserver <%= has_variable?("monit_mailserver") ? monit_mailserver : "localhost" %> 
-<% end %>
+<%- else -%> 
+set mailserver <%= has_variable?("monit_mailserver") ? monit_mailserver : "localhost" %> 
+<% end -%>
 
 ## By default Monit will drop alert events if no mail servers are available.
 ## If you want to keep the alerts for later delivery retry, you can use the
@@ -81,7 +82,7 @@ set eventqueue
       
       
 set mail-format {
-    from: monit@<%= fqdn %>
+    from: <%= @senderaddr %>
     subject: monit alert -- $HOST $EVENT $SERVICE
     message: $EVENT Service $SERVICE
                  Date:        $DATE

@@ -23,16 +23,75 @@
 #   }
 # (end)
 
-define monit::check::device($ensure=present,
-                             $devpath=undef,
-                             $mntptn=undef,
-                             $customlines="") {
+define monit::check::device(  
+  $ensure             = present,
+  
+  $devpath            = false,
+  $mntptn             = $name,
+  $fstype             = "ext4",
+  $mntoptions         = "defaults",
+      
+  $default_alert      = "",
+  $default_usage      = "85%",
+
+  $emergency_alert    = "${default_alert}",
+  $emergency_usage    = "95%",
+ 
+  $customlines        = [],
+  
+  $mismatch_cnt_id    = false, # if you add a number here /sys/block/md<%= mismatch_cnt_id %> is checked
+  
+  
+) {
+  if $mntptn != '/' and $mntptn != '' {
+	  if !defined(File[$mntptn]) {
+	    file {"${mntptn}":
+	       ensure => directory
+	    }
+	  }
+  
+	  case $fstype {    
+	    'ext4': {
+		     mount { "${mntptn}":
+		       atboot  => true,
+		       ensure  => mounted,
+		       device  => "${devpath}",
+		       fstype  => "${fstype}",
+		       options => "${mntoptions}",
+		       dump    => 0,
+		       pass    => 2,
+		       require => File["${mntptn}"],	       
+	      }
+	    }
+	  }
+  }
+      
   file {"/etc/monit/conf.d/device_$name.conf":
     ensure  => $ensure,
     owner   => "root",
     group   => "root",
-    mode    => "0400",
+    mode    => "0440",
     content => template("monit/check_device.monitrc.erb"),
     notify  => Service["monit"],
+  }
+  
+  if $mismatch_cnt_id {
+    if !defined(File["/etc/monit/scripts/check-mdstat.sh"]) {    
+		  file { "/etc/monit/scripts/check-mdstat.sh":
+		    ensure  => $ensure,
+		    owner   => "root",
+		    group   => "root",
+		    mode    => 0555,
+		    content => template("monit/checkscripts/check_mdstat.sh.erb"),
+		  }    
+    }
+    
+    ::monit::check::programm{"md${mismatch_cnt_id}_mismatch_cnt":
+      ensure  => $ensure,
+      scriptpath  => "/etc/monit/scripts/check-mdstat.sh",
+      depends_on  => ["mdadm"],
+      customlines => ["if status != 0 then alert"],
+      require     => File["/etc/monit/scripts/check-mdstat.sh"],
+    } 
   }
 }

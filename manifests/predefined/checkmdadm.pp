@@ -16,9 +16,10 @@
 #   - Package["monit"]
 #
 define monit::predefined::checkmdadm(
-  $ensure=present,
-  $warnlimit=1,
-  $critlimit=5,
+  $ensure       =present,
+  $warnlimit    =1,
+  $critlimit    =5,
+  $run_cnt_chk  = true, # runs mismatch_cnt script with param *
 ) {
 
   monit::check::file{"mdadm_conf":
@@ -33,21 +34,23 @@ define monit::predefined::checkmdadm(
     depends_on => ["mdadm_conf"],
     customlines => ["if 2 restarts within 4 cycles then timeout"],
   }
+  
+  if $run_cnt_chk { 
+	  file { "/etc/monit/scripts/check-mdstat.sh":
+	    ensure  => $ensure,
+	    owner   => "root",
+	    group   => "root",
+	    mode    => 0555,
+	    content => template("monit/checkscripts/check_mdstat.sh.erb"),
+	  }
 
-  file { "/etc/monit/scripts/check-mdstat.sh":
-    ensure  => $ensure,
-    owner   => "root",
-    group   => "root",
-    mode    => 0555,
-    content => template("monit/checkscripts/check_mdstat.sh.erb"),
+	  monit::check::programm {"mdadm_check":
+	    ensure      => $ensure,
+	    scriptpath  => "/etc/monit/scripts/check-mdstat.sh",
+	    depends_on  => ["mdadm"],
+	    customlines => ["if status != 0 then alert"],
+	    require     => File["/etc/monit/scripts/check-mdstat.sh"],
+	  }
   }
-
-  monit::check::programm {"mdadm_check":
-    ensure      => $ensure,
-    scriptpath  => "/etc/monit/scripts/check-mdstat.sh",
-    depends_on  => ["mdadm"],
-    customlines => ["if status != 0 then alert"],
-  }
-
 
 }

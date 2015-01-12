@@ -5,7 +5,13 @@ WARN_LIMIT=1
 CRIT_LIMIT=3
 
 DATA=0
-for file in /sys/block/md*/md/mismatch_cnt; do
+if [ "x$1" == "x" ]; then
+  DEVID="*"
+else
+  DEVID=$1 
+fi
+
+for file in /sys/block/md$DEVID/md/mismatch_cnt; do
         cat $file | grep 0 > /dev/null
         if [ $? -ne 0 ]; then
                 DATA=`cat $file`

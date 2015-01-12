@@ -42,14 +42,16 @@
 #
 
 class monit(
-  $alert          = '',
+  $alert          = 'root@localhost',
+  $senderaddr     = "monit@${fqdn}",  
   $enable_httpd   = 'no',
   $http_port      = '2812',
   $mailserver     = ['localhost'],
   $pool_interval  = 120,
   $start_delay    = 240,
   $secret         = '',  
-  $mmoniturl      = ''  
+  $mmoniturl      = ''
+    
 ) {
 
   notice( "checking monit for : $fqdn" )
@@ -79,6 +81,7 @@ class monit(
     '': { $monit_secret = ''}
     default: { $monit_secret = $secret }
   }
+  $monit_default_secret = "changeme"
 
 	# The package
 	package { "monit":

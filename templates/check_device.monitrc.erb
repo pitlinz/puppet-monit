@@ -2,12 +2,21 @@
 # 
 # This file is handled by puppet, all local modifications will be lost
 
-check device <%= name %>
-  with path "<%= devpath %>"
-	if space usage > 95% then alert
-	if inode usage > 95% then alert
-<% if @customlines.size != 0 then -%>
-	<% customlines.to_a.each do |line| -%>
+<%- if @emergency_usage  -%>
+check device <%= @name %>_emergency
+  with path "<%= @devpath %>"
+	if space usage > <%= emergency_usage %> then alert 
+	if inode usage > <%= emergency_usage %> then alert
+	alert <%= @emergency_alert %> with reminder on 30 cycles
+<%- end -%>
+
+check device <%= @name %>
+  with path "<%= @devpath %>"	
+	if space usage > <%= default_usage %> for 3 cycles then alert
+	if inode usage > <%= default_usage %> for 3 cycles then alert 
+	alert <%= @default_alert %> with reminder on 120 cycles	
+<%- if @customlines.size > 0 then -%>
+	<%- customlines.to_a.each do |line| -%>
 	  <%= line %>
-	<% end -%>
-<% end -%>  
+	<%- end -%>
+<%- end %>  
