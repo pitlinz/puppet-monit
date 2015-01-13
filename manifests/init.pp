@@ -50,8 +50,8 @@ class monit(
   $pool_interval  = 120,
   $start_delay    = 240,
   $secret         = '',  
-  $mmoniturl      = ''
-    
+  $mmoniturl      = '',
+  $checkpuppet    = false,        # monitor the puppet agent
 ) {
 
   notice( "checking monit for : $fqdn" )
@@ -121,6 +121,8 @@ class monit(
 	file { "/etc/monit/conf.d":
 			ensure  => directory,
 			mode    => "0700",
+			require => Package["monit"],
+			before  => Service["monit"]
 	}
 
 	# The main configuration file
@@ -128,7 +130,8 @@ class monit(
     owner   => "root",
     group   => "root",
     mode    => "0400",
-		content => template("monit/monitrc.erb"),
+		content => template("monit/monitrc.erb"),		
+		before  => Service["monit"]
 	}
 
   # system check
@@ -156,6 +159,7 @@ class monit(
 
   file { "/etc/monit/conf.d/system.conf":
     content => template("monit/check_system.erb"),
+    before  => Service["monit"]
   }
 
 	# Monit is disabled by default on debian / ubuntu
@@ -182,5 +186,13 @@ class monit(
     group   => "root",
     mode    => "0755",
   }
+  
+  monit::check::process{"puppet_agent":
+    pidfile => "/var/run/puppet/agent.pid",
+    start  =>  "/usr/sbin/service puppet start",
+    stop   =>  "/usr/sbin/service puppet stop"
+  }
+    
+  
 
 }

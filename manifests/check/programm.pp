@@ -2,16 +2,18 @@
 # Creates a monit programm check,
 #
 # Parameters:
-#   namevar     - the name check
-#   scriptpath  - path to the file
-#   start       - the command used by monit to start the service
-#   stop        - the command used by monit to stop the service
-#   customlines - lets you inject custom lines into the monitrc snippet, just pass an array, and it will appear in the configuration file
+#   namevar       - the name check
+#   scriptpath    - path to the file
+#   scriptparams  - params to pass to the script
+#   start         - the command used by monit to start the service
+#   stop          - the command used by monit to stop the service
+#   customlines   - lets you inject custom lines into the monitrc snippet, just pass an array, and it will appear in the configuration file
 
 
 define monit::check::programm(
-		  $ensure     = present,
-		  $scriptpath = "",
+		  $ensure       = present,
+		  $scriptpath   = "",
+		  $scriptparams = "",
 		  $start="",
 		  $start_extras="",
 		  $stop="",

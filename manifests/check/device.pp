@@ -87,11 +87,12 @@ define monit::check::device(
     }
     
     ::monit::check::programm{"md${mismatch_cnt_id}_mismatch_cnt":
-      ensure  => $ensure,
-      scriptpath  => "/etc/monit/scripts/check-mdstat.sh",
-      depends_on  => ["mdadm"],
-      customlines => ["if status != 0 then alert"],
-      require     => File["/etc/monit/scripts/check-mdstat.sh"],
+      ensure        => $ensure,
+      scriptpath    => "/etc/monit/scripts/check-mdstat.sh",
+      scriptparams  => "${mismatch_cnt_id}",
+      depends_on    => ["mdadm"],
+      customlines   => ["if status != 0 then alert"],
+      require       => File["/etc/monit/scripts/check-mdstat.sh"],
     } 
   }
 }

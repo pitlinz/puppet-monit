@@ -3,7 +3,7 @@
 # This file is handled by puppet, all local modifications will be lost
 
 check program <%= name %>
-  with path "<%= scriptpath %>"
+  with path "<%= scriptpath %> <%= scriptparams %>"
 <% if @depends_on.size != 0 then -%>
 	<% depends_on.to_a.each do |othercheck| -%>
 		depends on <%= othercheck %>
