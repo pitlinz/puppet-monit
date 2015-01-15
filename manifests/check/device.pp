@@ -52,36 +52,41 @@ define monit::check::device(
   
 	  case $fstype {    
 	    'ext4': {
-		     mount { "${mntptn}":
-		       atboot  => true,
-		       ensure  => mounted,
-		       device  => "${devpath}",
-		       fstype  => "${fstype}",
-		       options => "${mntoptions}",
-		       dump    => 0,
-		       pass    => 2,
-		       require => File["${mntptn}"],	       
+	       if !defined(Mount["${mntptn}"]) {
+			     mount { "${mntptn}":
+			       atboot  => true,
+			       ensure  => mounted,
+			       device  => "${devpath}",
+			       fstype  => "${fstype}",
+			       options => "${mntoptions}",
+			       dump    => 0,
+			       pass    => 2,
+			       require => File["${mntptn}"],
+			       
+			     }	       
 	      }
 	    }
 	  }
   }
-      
-  file {"/etc/monit/conf.d/device_$name.conf":
-    ensure  => $ensure,
-    owner   => "root",
-    group   => "root",
-    mode    => "0440",
-    content => template("monit/check_device.monitrc.erb"),
-    notify  => Service["monit"],
-  }
   
+  if $devpath != '' and $mntptn != '' and $fstype != 'nfs' {
+	  file {"/etc/monit/conf.d/device_$name.conf":
+	    ensure  => $ensure,
+	    owner   => "root",
+	    group   => "root",
+	    mode    => "0440",
+	    content => template("monit/check_device.monitrc.erb"),
+	    notify  => Service["monit"],
+	  }
+  }
+    
   if $mismatch_cnt_id {
     if !defined(File["/etc/monit/scripts/check-mdstat.sh"]) {    
 		  file { "/etc/monit/scripts/check-mdstat.sh":
 		    ensure  => $ensure,
 		    owner   => "root",
 		    group   => "root",
-		    mode    => 0555,
+		    mode    => "0555",
 		    content => template("monit/checkscripts/check_mdstat.sh.erb"),
 		  }    
     }

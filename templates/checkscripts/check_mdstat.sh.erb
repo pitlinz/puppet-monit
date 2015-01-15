@@ -1,8 +1,8 @@
 #!/bin/bash
 #template from http://www.juliux.de/nagios-plugin-vorlage-bash
 
-WARN_LIMIT=<%= warnlimit %>
-CRIT_LIMIT=<%= critlimit %>
+WARN_LIMIT=<%= @warnlimit %>
+CRIT_LIMIT=<%= @critlimit %>
 
 DATA=0
 for file in /sys/block/md*/md/mismatch_cnt; do

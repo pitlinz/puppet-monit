@@ -36,14 +36,16 @@ define monit::predefined::checkmdadm(
   }
   
   if $run_cnt_chk { 
-	  file { "/etc/monit/scripts/check-mdstat.sh":
-	    ensure  => $ensure,
-	    owner   => "root",
-	    group   => "root",
-	    mode    => 0555,
-	    content => template("monit/checkscripts/check_mdstat.sh.erb"),
-	  }
-
+    if !defined(File["/etc/monit/scripts/check-mdstat.sh"]) {
+		  file { "/etc/monit/scripts/check-mdstat.sh":
+		    ensure  => $ensure,
+		    owner   => "root",
+		    group   => "root",
+		    mode    => 0555,
+		    content => template("monit/checkscripts/check_mdstat.sh.erb"),
+		  }
+    }
+    
 	  monit::check::programm {"mdadm_check":
 	    ensure      => $ensure,
 	    scriptpath  => "/etc/monit/scripts/check-mdstat.sh",
