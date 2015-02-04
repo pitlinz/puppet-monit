@@ -62,7 +62,6 @@ define monit::check::device(
 			       dump    => 0,
 			       pass    => 2,
 			       require => File["${mntptn}"],
-			       
 			     }	       
 	      }
 	    }
@@ -81,23 +80,33 @@ define monit::check::device(
   }
     
   if $mismatch_cnt_id {
+    if !defined(Monit::Predefined::Checkmdadm["monit_mdadm"]) {
+      monit::predefined::checkmdadm{"monit_mdadm":}
+    }
+    
     if !defined(File["/etc/monit/scripts/check-mdstat.sh"]) {    
 		  file { "/etc/monit/scripts/check-mdstat.sh":
 		    ensure  => $ensure,
 		    owner   => "root",
 		    group   => "root",
-		    mode    => "0555",
+		    mode    => "0550",
 		    content => template("monit/checkscripts/check_mdstat.sh.erb"),
 		  }    
     }
     
-    ::monit::check::programm{"md${mismatch_cnt_id}_mismatch_cnt":
+    file {"/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh":
+      ensure => link,
+      target => "/etc/monit/scripts/check-mdstat.sh",
+      require => File["/etc/monit/scripts/check-mdstat.sh"],
+      before  => Service["monit"]
+    }
+    
+    ::monit::check::programm{"check-md-${mismatch_cnt_id}-stat":
       ensure        => $ensure,
-      scriptpath    => "/etc/monit/scripts/check-mdstat.sh",
-      scriptparams  => "${mismatch_cnt_id}",
+      scriptpath    => "/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh",
       depends_on    => ["mdadm"],
       customlines   => ["if status != 0 then alert"],
-      require       => File["/etc/monit/scripts/check-mdstat.sh"],
+      require       => File["/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh"],
     } 
   }
 }

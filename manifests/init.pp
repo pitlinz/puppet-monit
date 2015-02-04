@@ -48,7 +48,7 @@ class monit(
   $http_port      = '2812',
   $mailserver     = ['localhost'],
   $pool_interval  = 120,
-  $start_delay    = 240,
+  $start_delay    = 60,
   $secret         = '',  
   $mmoniturl      = '',
   $checkpuppet    = false,        # monitor the puppet agent
@@ -188,9 +188,9 @@ class monit(
   }
   
   monit::check::process{"puppet_agent":
-    pidfile => "/var/run/puppet/agent.pid",
-    start  =>  "/usr/sbin/service puppet start",
-    stop   =>  "/usr/sbin/service puppet stop"
+    pidfile => "/var/lib/puppet/run/agent.pid",
+    start  =>  "/etc/init.d/puppet start",
+    stop   =>  "/etc/init.d/puppet stop"
   }
     
   

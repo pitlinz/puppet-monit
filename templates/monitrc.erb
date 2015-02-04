@@ -36,8 +36,8 @@ set alert <%= has_variable?("monit_alert") ? monit_alert : monit_default_alert %
 
 <%- if monit_enable_httpd.to_s == 'yes' or monit_enable_httpd.to_s == 'true' then -%>
 	<%- if monit_secret != "" -%>
-	set httpd port <%= has_variable?("httpd_port") ? httpd_port : "2812" %> and
-	    allow admin:<%= monit_secret %>	
+set httpd port <%= has_variable?("httpd_port") ? httpd_port : "2812" %> and
+    allow admin:<%= monit_secret %>	
 	<%- else -%>
 		<%# BEGIN functions %>
 		<%
@@ -56,8 +56,14 @@ set alert <%= has_variable?("monit_alert") ? monit_alert : monit_default_alert %
 		<%# END functions %>
 set httpd port <%= has_variable?("monit_httpd_port") ? monit_httpd_port : "2812" %> and
 	allow monit:<%= password %>
+	<%- end -%>	 	
+	allow localhost
+	allow $::fqdn
 	<%= has_variable?("monit_httpd_address") ? "use address ${monit_httpd_address}" : "" %>
-	<%- end -%>	    
+<%-else -%>
+set httpd port 2812 and
+	use address localhost
+	allow localhost  
 <%- end -%>
 
 <%- if @mailserver.size != 0 then -%> 

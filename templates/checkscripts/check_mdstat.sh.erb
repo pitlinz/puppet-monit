@@ -1,11 +1,32 @@
 #!/bin/bash
 #template from http://www.juliux.de/nagios-plugin-vorlage-bash
 
+<%- if @warnlimit -%>
 WARN_LIMIT=<%= @warnlimit %>
+<%- else -%>
+WARN_LIMIT=1
+<%- end %>
+<%- if @critlimit -%>
 CRIT_LIMIT=<%= @critlimit %>
+<%- else -%>
+CRIT_LIMIT=5
+<%- end %>
+
+MDFILTER=*
+if [ "$1" -eq "$1" ] 2>/dev/null; then
+	# -eq expects integers just pipe error msg to /dev/null	
+	MDFILTER=$1
+else
+	BASENAME=`basename $0`
+	PART=`echo $BASENAME | cut -f3 -d'-'`	
+	if [ "$PART" -eq "$PART" ] 2>/dev/null; then
+		MDFILTER=$PART
+	fi
+fi
+
 
 DATA=0
-for file in /sys/block/md*/md/mismatch_cnt; do
+for file in /sys/block/md${MDFILTER}/md/mismatch_cnt; do
         cat $file | grep 0 > /dev/null
         if [ $? -ne 0 ]; then
                 DATA=`cat $file`

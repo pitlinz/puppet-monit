@@ -30,7 +30,7 @@ define monit::check::file($ensure=present,
                              $start_extras="",
                              $stop=undef,
                              $stop_extras="",
-                             $customlines="") {
+                             $customlines=[]) {
   file {"/etc/monit/conf.d/file_$name.conf":
     ensure  => $ensure,
     owner   => "root",
