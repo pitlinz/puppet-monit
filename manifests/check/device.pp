@@ -31,11 +31,11 @@ define monit::check::device(
   $fstype             = "ext4",
   $mntoptions         = "defaults",
       
-  $default_alert      = "",
+  $default_alert      = "root@${::fqdn}",
   $default_usage      = "85%",
 
-  $emergency_alert    = "${default_alert}",
-  $emergency_usage    = "95%",
+  $emergency_alert    = "",
+  $emergency_usage    = false,
  
   $customlines        = [],
   
@@ -94,11 +94,13 @@ define monit::check::device(
 		  }    
     }
     
-    file {"/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh":
-      ensure => link,
-      target => "/etc/monit/scripts/check-mdstat.sh",
-      require => File["/etc/monit/scripts/check-mdstat.sh"],
-      before  => Service["monit"]
+    if !defined(File["/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh"]) {
+      file {"/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh":
+	      ensure => link,
+	      target => "/etc/monit/scripts/check-mdstat.sh",
+	      require => File["/etc/monit/scripts/check-mdstat.sh"],
+	      before  => Service["monit"]	      
+	    }
     }
     
     ::monit::check::programm{"check-md-${mismatch_cnt_id}-stat":

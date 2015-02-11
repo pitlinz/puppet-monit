@@ -34,32 +34,11 @@ set statefile /var/lib/monit/state
                            
 set alert <%= has_variable?("monit_alert") ? monit_alert : monit_default_alert %>
 
-<%- if monit_enable_httpd.to_s == 'yes' or monit_enable_httpd.to_s == 'true' then -%>
-	<%- if monit_secret != "" -%>
+<%- if @monit_secret != '' then -%>	
 set httpd port <%= has_variable?("httpd_port") ? httpd_port : "2812" %> and
-    allow admin:<%= monit_secret %>	
-	<%- else -%>
-		<%# BEGIN functions %>
-		<%
-		require 'digest/sha1'
-		
-		def password
-		  if defined?(monit_secret)
-		    s = monit_secret
-		  else
-		    s = monit_default_secret
-		  end
-		
-		  return Digest::SHA1.hexdigest(s + Digest::SHA1.hexdigest(s + fqdn))
-		end
-		%>
-		<%# END functions %>
-set httpd port <%= has_variable?("monit_httpd_port") ? monit_httpd_port : "2812" %> and
-	allow monit:<%= password %>
-	<%- end -%>	 	
+    allow admin:<%= @monit_secret %>	
 	allow localhost
-	allow $::fqdn
-	<%= has_variable?("monit_httpd_address") ? "use address ${monit_httpd_address}" : "" %>
+	allow <%= fqdn %>
 <%-else -%>
 set httpd port 2812 and
 	use address localhost

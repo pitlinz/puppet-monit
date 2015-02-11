@@ -44,11 +44,11 @@
 class monit(
   $alert          = 'root@localhost',
   $senderaddr     = "monit@${fqdn}",  
-  $enable_httpd   = 'no',
+  $enable_httpd   = false,
   $http_port      = '2812',
   $mailserver     = ['localhost'],
   $pool_interval  = 120,
-  $start_delay    = 60,
+  $start_delay    = 240,
   $secret         = '',  
   $mmoniturl      = '',
   $checkpuppet    = false,        # monitor the puppet agent
@@ -67,21 +67,16 @@ class monit(
     '': { $monit_pool_interval = '120' }
     default: { $monit_pool_interval = $pool_interval}
   }
-
-  # Should the httpd daemon be enabled, or not? By default it is not
-  case $enable_httpd {
-    '': { $monit_enable_httpd = 'no' }
-    default: { 
-      $monit_enable_httpd = $enable_httpd
-    }
-  }
-  
+    
   # monit secret for http access
-  case $secret {
-    '': { $monit_secret = ''}
-    default: { $monit_secret = $secret }
+  if !$enable_httpd {
+    $monit_secret = ''
+  } else {
+	  case $secret {
+	    '': { $monit_secret = 'd3f4ltm0n1tpass'}
+	    default: { $monit_secret = $secret }
+	  }
   }
-  $monit_default_secret = "changeme"
 
 	# The package
 	package { "monit":
