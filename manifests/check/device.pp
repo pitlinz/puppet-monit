@@ -43,15 +43,15 @@ define monit::check::device(
   
   
 ) {
-  if $mntptn != '/' and $mntptn != '' {
-	  if !defined(File[$mntptn]) {
-	    file {"${mntptn}":
-	       ensure => directory
-	    }
-	  }
-  
+  if $mntptn != '/' and !empty($mntptn) {  
 	  case $fstype {    
 	    'ext4': {
+			   if !defined(File[$mntptn]) {
+			     file {"${mntptn}":
+			       ensure => directory
+			     }
+			   }     
+	      
 	       if !defined(Mount["${mntptn}"]) {
 			     mount { "${mntptn}":
 			       atboot  => true,
@@ -68,7 +68,7 @@ define monit::check::device(
 	  }
   }
   
-  if $devpath != '' and $mntptn != '' and $fstype != 'nfs' {
+  if $devpath != '' and $mntptn != '' and $fstype != 'nfs' and $fstype != 'lvm' {
 	  file {"/etc/monit/conf.d/device_$name.conf":
 	    ensure  => $ensure,
 	    owner   => "root",
