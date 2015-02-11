@@ -1,0 +1,26 @@
+# Configuration snippet for <%= name %>
+# 
+# This file is handled by puppet, all local modifications will be lost
+
+check process sshd
+  with pidfile "<%= pidfile %>"
+	start program = "<%= start %>"
+	stop program  = "<%= stop %>"
+<% if @depends_on.size != 0 then -%>
+	<%- depends_on.to_a.each do |othercheck| -%>
+	depends on <%= othercheck %>
+	<%- end -%>
+<% end -%>
+<%- if @portlist.size != 0 then -%>
+	<%- portlist.to_a.each do |port| -%>
+	if failed port <%= port %> then alert
+	if failed port <%= port %> for 3 cycles then restart
+	<%- end -%>
+<%- end -%>
+<% if @customlines.size != 0 then -%>
+	<%- customlines.to_a.each do |line| -%>
+	<%= line %>
+	<%- end -%>
+<% end %> 
+
+ 
