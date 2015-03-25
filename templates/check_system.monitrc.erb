@@ -5,8 +5,8 @@
 # This file is handled by puppet, all local modifications will be lost
 
 check system  <%= fqdn %>
-    if loadavg (1min) > 8 then alert
-    if loadavg (5min) > 6 then alert
+    if loadavg (1min) > <%= load1Alarm %> then alert
+    if loadavg (5min) > <%= load5Alarm %> then alert 
     if memory usage > 80% then alert
     if swap usage > 50% then alert
     if cpu usage (user) > 90% then alert

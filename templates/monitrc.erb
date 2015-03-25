@@ -5,7 +5,7 @@
 #
 ## Start Monit in the background (run as a daemon):
 #
-set daemon <%= monit_pool_interval %>
+set daemon <%= pool_interval %>
 #   with start delay 240   
 with start delay <%= start_delay %> 
    
@@ -31,19 +31,20 @@ set idfile /var/lib/monit/id
 ## state will be lost on reboot which may be convenient in some situations.
 #
 set statefile /var/lib/monit/state
-                           
-set alert <%= has_variable?("monit_alert") ? monit_alert : monit_default_alert %>
-
-<%- if @monit_secret != '' then -%>	
-set httpd port <%= has_variable?("httpd_port") ? httpd_port : "2812" %> and
-    allow admin:<%= @monit_secret %>	
+  
+<%- if http_port != '' -%>
+set httpd port <%= @httpd_port %> and
+	<%- if @http_secret != '' then -%>		
+    allow <%= @http_user %>:<%= @http_secret %>
+    <%- end -%>	
 	allow localhost
 	allow <%= fqdn %>
-<%-else -%>
-set httpd port 2812 and
-	use address localhost
-	allow localhost  
-<%- end -%>
+	allow <%= ipaddress %>
+                          
+                           
+
+
+
 
 <%- if @mailserver.size != 0 then -%> 
 set mailserver 
@@ -66,6 +67,8 @@ set eventqueue
     slots 100                     # optionally limit the queue size
       
       
+set alert <%= @alert %>
+
 set mail-format {
     from: <%= @senderaddr %>
     subject: monit alert -- $HOST $EVENT $SERVICE
