@@ -33,18 +33,12 @@ set idfile /var/lib/monit/id
 set statefile /var/lib/monit/state
   
 <%- if http_port != '' -%>
-set httpd port <%= @httpd_port %> and
-	<%- if @http_secret != '' then -%>		
-    allow <%= @http_user %>:<%= @http_secret %>
-    <%- end -%>	
+set httpd port <%= @http_port %>
+<%- if @http_secret != '' then -%>	allow <%= @http_user %>:<%= @http_secret %><%- end -%>	
 	allow localhost
 	allow <%= fqdn %>
 	allow <%= ipaddress %>
-                          
-                           
-
-
-
+<%- end -%>
 
 <%- if @mailserver.size != 0 then -%> 
 set mailserver 
