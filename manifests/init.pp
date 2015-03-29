@@ -133,12 +133,11 @@ class monit(
     	mode    => "0755",
   	}
 
-	monit::check::process{"puppet_agent":
-		pidfile => "/var/lib/puppet/run/agent.pid",
-	    start  =>  "/etc/init.d/puppet start",
-	    stop   =>  "/etc/init.d/puppet stop"
-  	}
-
-
-
+	if $checkpuppet {
+		monit::check::process{"puppet_agent":
+			pidfile => "/var/lib/puppet/run/agent.pid",
+		    start  =>  "/etc/init.d/puppet start",
+		    stop   =>  "/etc/init.d/puppet stop"
+	  	}
+	}
 }

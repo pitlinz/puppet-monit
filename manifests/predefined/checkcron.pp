@@ -6,8 +6,8 @@
 # Actions:
 #   The following actions gets taken by this defined type:
 #
-define monit::predefined::checkbind(
+define monit::predefined::checkcron(
   $ensure     = present,
 ) {
-  
+
 }

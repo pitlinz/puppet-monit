@@ -15,14 +15,13 @@ define monit::predefined::checksshd(
     filepath => "/etc/ssh/sshd_config",
     customlines => ["if failed checksum then alert"],
   }
-  
 
   $pidfile     = "/var/run/sshd.pid"
   $start       = "/etc/init.d/ssh start"
   $stop        = "/etc/init.d/ssh stop"
   $depends_on  = ["sshd_conf"]
   $customlines = ["if 4 restarts within 6 cycles then timeout"]
-  
+
   if !is_array($sshport) {
     $portlist = [$sshport]
   } else {
