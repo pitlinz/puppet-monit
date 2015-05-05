@@ -42,7 +42,7 @@ set httpd port <%= @http_port %>
 	<% allowips.to_a.each do |ip| -%>
 	allow <%= ip %>
 	<% end -%>	
-<%- end -%<	
+<%- end -%>
 <%- end -%>
 
 <%- if @mailserver.size != 0 then -%> 
