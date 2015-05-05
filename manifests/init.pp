@@ -28,6 +28,7 @@ class monit(
 	$http_port      = '',
 	$http_user      = 'admin',
 	$http_secret    = 'cHangeMe',
+	$allowips		= [],
 
 	$pool_interval  = 120,
 	$start_delay    = 240,
@@ -134,8 +135,8 @@ class monit(
   	}
 
 	if $checkpuppet {
-		monit::check::process{"puppet_agent":
-			pidfile => "/var/lib/puppet/run/agent.pid",
+		monit::check::process{"puppet":
+			pidfile => "/var/run/puppet/agent.pid",
 		    start  =>  "/etc/init.d/puppet start",
 		    stop   =>  "/etc/init.d/puppet stop"
 	  	}

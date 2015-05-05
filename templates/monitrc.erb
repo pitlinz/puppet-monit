@@ -38,6 +38,11 @@ set httpd port <%= @http_port %>
 	allow localhost
 	allow <%= fqdn %>
 	allow <%= ipaddress %>
+<%- if @allowips.size != 0 then -%>
+	<% allowips.to_a.each do |ip| -%>
+	allow <%= ip %>
+	<% end -%>	
+<%- end -%<	
 <%- end -%>
 
 <%- if @mailserver.size != 0 then -%> 
