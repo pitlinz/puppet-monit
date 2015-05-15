@@ -1,0 +1,17 @@
+#!/bin/bash
+# script to check if all md devices are up
+#
+
+
+if [ -f /proc/mdstat ]; then
+	NOE=`/bin/cat /proc/mdstat | /bin/grep -c "_U"`
+	if [ $NOE -gt 0 ]; then
+		exit $NOD
+	fi
+	NOE=`/bin/cat /proc/mdstat | /bin/grep -c "U_"`
+	if [ $NOE -gt 0 ]; then
+		exit $NOD
+	fi
+fi
+
+exit 0

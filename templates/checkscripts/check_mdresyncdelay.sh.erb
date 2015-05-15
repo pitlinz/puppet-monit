@@ -1,0 +1,8 @@
+#!/bin/bash
+# script to check if some devices are not in snyc
+#
+
+if [ -f /proc/mdstat ]; then
+	NOD=`/bin/cat /proc/mdstat | /bin/grep -ci "resync=DELAYED"`
+	exit $NOD
+fi

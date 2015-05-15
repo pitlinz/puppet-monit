@@ -1,0 +1,21 @@
+# Configuration snippet for mongodb
+# 
+# This file is handled by puppet, all local modifications will be lost
+
+check process <%= @processname %> with pidfile "<%= @pidfile %>"
+	start program = "<%= start %>"
+	stop program  = "<%= stop %>"
+<%- if @depends_on_conf then -%>
+	depends_on <%= depends_on_conf %>
+<% end -%> 	
+<%- if @depends_on.size != 0 then -%>
+	<% depends_on.to_a.each do |othercheck| -%>
+		depends on <%= othercheck %>
+	<% end -%>
+<% end -%>
+	if failed host <%= @checkhost %> port <%= checkport %> protocol http and request "/" then alert
+<% if @customlines.size != 0 then -%>
+	<% customlines.to_a.each do |line| -%>
+		<%= line %>
+	<% end -%>
+<% end -%>  

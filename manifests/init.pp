@@ -25,10 +25,10 @@ class monit(
 	$senderaddr     = "monit@${fqdn}",
 	$mailserver     = ['localhost'],
 
-	$http_port      = '',
+	$http_port      = '2812',
 	$http_user      = 'admin',
 	$http_secret    = 'cHangeMe',
-	$allowips		= [],
+	$allowips		= ['127.0.0.1'],
 
 	$pool_interval  = 120,
 	$start_delay    = 240,
@@ -135,10 +135,23 @@ class monit(
   	}
 
 	if $checkpuppet {
+	    case $puppetversion {
+	        /^2.*/: {
+	            $puppetpidfile = "/var/puppet/run/agent.pid"
+	        }
+			default: {
+			    $puppetpidfile = "/var/run/puppet/agent.pid"
+			}
+	    }
+
 		monit::check::process{"puppet":
-			pidfile => "/var/run/puppet/agent.pid",
+			pidfile => $puppetpidfile,
 		    start  =>  "/etc/init.d/puppet start",
 		    stop   =>  "/etc/init.d/puppet stop"
 	  	}
+	}
+
+	file {"/etc/monit/conf.d/process_puppet_agent.conf":
+	    ensure => absent
 	}
 }

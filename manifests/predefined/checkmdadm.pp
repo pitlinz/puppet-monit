@@ -15,12 +15,14 @@
 # Requires:
 #   - Package["monit"]
 #
-define monit::predefined::checkmdadm(
+class monit::predefined::checkmdadm(
 	$ensure       =present,
 	$warnlimit    =1,
 	$critlimit    =5,
 	$run_cnt_chk  = true, # runs mismatch_cnt script with param *
 ) {
+
+    include monit
 
 	monit::check::file{"mdadm_conf":
 		ensure => $ensure,
@@ -54,5 +56,41 @@ define monit::predefined::checkmdadm(
 			require     => File["/etc/monit/scripts/check-mdstat.sh"],
 		}
   	}
+
+	if !defined(File["/etc/monit/scripts/check_mdresyncdelay.sh"]) {
+		file { "/etc/monit/scripts/check_mdresyncdelay.sh":
+			ensure  => $ensure,
+			owner   => "root",
+			group   => "root",
+			mode    => '0555',
+			content => template("monit/checkscripts/check_mdresyncdelay.sh.erb"),
+		}
+	}
+
+	monit::check::programm {"mdadm_checkresync":
+		ensure      => $ensure,
+		scriptpath  => "/etc/monit/scripts/check_mdresyncdelay.sh",
+		depends_on  => ["mdadm"],
+		customlines => ["if status != 0 then alert"],
+		require     => File["/etc/monit/scripts/check_mdresyncdelay.sh"],
+	}
+
+	if !defined(File["/etc/monit/scripts/check_mdup.sh"]) {
+		file { "/etc/monit/scripts/check_mdup.sh":
+			ensure  => $ensure,
+			owner   => "root",
+			group   => "root",
+			mode    => '0555',
+			content => template("monit/checkscripts/check_mdup.sh.erb"),
+		}
+	}
+
+	monit::check::programm {"mdadm_checkup":
+		ensure      => $ensure,
+		scriptpath  => "/etc/monit/scripts/check_mdup.sh",
+		depends_on  => ["mdadm"],
+		customlines => ["if status != 0 then alert"],
+		require     => File["/etc/monit/scripts/check_mdup.sh"],
+	}
 
 }
