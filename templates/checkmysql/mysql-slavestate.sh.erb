@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# script for checking the slave status
+# managed with puppet
+
+. /etc/environment
+
+
+MYSQLCMD=`/usr/bin/which mysql`
+<%- if @mysqlhost != '' then -%>
+MYSQLCMD="$MYSQLCMD -h <%= mysqlhost %>"
+<%- end -%>
+<%- if @mysqluser != '' then -%>
+MYSQLCMD="$MYSQLCMD -u <%= mysqluser %>"
+<%- end -%>
+<%- if @mysqlpwd != '' then -%>
+MYSQLCMD="$MYSQLCMD -p<%= mysqlpwd%>"
+<%- end -%>
+
+echo "" > /tmp/vars
+cat /etc/mysql/debian.cnf | grep -v '#'  | while IFS='= ' read var val; do
+    if [[ $var == \[*] ]]; then
+        section=$var
+    elif [[ $val ]]; then
+        if [ "$section"  == "[client]" ]; then
+              echo "MYSQL_$var=$val" >> /tmp/vars
+        fi
+   fi
+done
+
+. /tmp/vars
+rm /tmp/vars
+

@@ -9,7 +9,7 @@ WARN_LIMIT=1
 <%- if @critlimit -%>
 CRIT_LIMIT=<%= @critlimit %>
 <%- else -%>
-CRIT_LIMIT=5
+CRIT_LIMIT=16
 <%- end %>
 
 MDFILTER=*
@@ -27,13 +27,11 @@ fi
 
 DATA=0
 for file in /sys/block/md${MDFILTER}/md/mismatch_cnt; do
-        cat $file | grep 0 > /dev/null
-        if [ $? -ne 0 ]; then
-                DATA=`cat $file`
-        fi
-        MD_NAME=`echo $file | awk 'BEGIN { FS = "/" } ; { print $4 }'`
-        PERF_DATA+="$MD_NAME=`cat $file` "
+	(( DATA += `cat $file`))
+    MD_NAME=`echo $file | awk 'BEGIN { FS = "/" } ; { print $4 }'`
+    PERF_DATA+="$MD_NAME=`cat $file` "
 done
+
 if [ $DATA -lt $WARN_LIMIT ]; then
         echo "OK - all software raid mismatch_cnts are smaller than $WARN_LIMIT | $PERF_DATA"
         exit 0;
@@ -46,3 +44,14 @@ if [ $DATA -ge $CRIT_LIMIT ]; then
         echo "CRITICAL - software raid mismatch_cnts are greater or equal than $CRIT_LIMIT | $PERF_DATA"
         exit 2;
 fi
+
+
+
+
+## to fix mismatch_cnts:
+# echo repair >/sys/block/md0/md/sync_action
+# watch cat /proc/mdstat
+#
+# echo check >/sys/block/md0/md/sync_action
+# watch cat /proc/mdstat
+

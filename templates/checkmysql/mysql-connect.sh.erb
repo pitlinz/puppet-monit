@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# script to test if a connection can be established
+# managed with puppet
+
+. /etc/environment
+
+MYSQLCMD=`/usr/bin/which mysql`
+<%- if @mysqlhost != '' then -%>
+MYSQLCMD="$MYSQLCMD -h <%= mysqlhost %>"
+<%- end -%>
+<%- if @mysqluser != '' then -%>
+MYSQLCMD="$MYSQLCMD -u <%= mysqluser %>"
+<%- end -%>
+<%- if @mysqlpwd != '' then -%>
+MYSQLCMD="$MYSQLCMD -p<%= mysqlpwd%>"
+<%- end -%>
+
+CHKDB="information_schema"
+TBLEXISTS=`$MYSQLCMD -e "show databases" | grep -c "$CHKDB"`;
+if [ $TBLEXISTS -gt 0 ]; then
+	echo "successfully connected to mysql"
+	exit 0;
+else
+	echo "error database $CHKDB not found"
+	exit 1;
+fi
+

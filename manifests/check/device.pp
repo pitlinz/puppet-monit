@@ -47,70 +47,66 @@ define monit::check::device(
 
   if $mntptn != '/' and !empty($mntptn) {
 	  case $fstype {
-	    'ext4': {
-			if !defined(File[$mntptn]) {
-				file {"${mntptn}":
-			       ensure => directory
+	    	'ext4': {
+				if !defined(File[$mntptn]) {
+					file {"${mntptn}":
+			       		ensure => directory
+					}
 				}
-			}
 
-	       if !defined(Mount["${mntptn}"]) {
-			     mount { "${mntptn}":
-			       atboot  => true,
-			       ensure  => mounted,
-			       device  => "${devpath}",
-			       fstype  => "${fstype}",
-			       options => "${mntoptions}",
-			       dump    => 0,
-			       pass    => 2,
-			       require => File["${mntptn}"],
-			     }
-	      }
-	    }
+	       		if !defined(Mount["${mntptn}"]) {
+			    	mount { "${mntptn}":
+	   					atboot  => true,
+	   					ensure  => mounted,
+	   					device  => "${devpath}",
+	   					fstype  => "${fstype}",
+	   					options => "${mntoptions}",
+	   					dump    => 0,
+	   					pass    => 2,
+	   					require => File["${mntptn}"],
+			     	}
+	      		}
+	    	}
 	  }
   }
 
   if $devpath != '' and $mntptn != '' and $fstype != 'nfs' and $fstype != 'lvm' {
-	  file {"/etc/monit/conf.d/device_$name.conf":
-	    ensure  => $ensure,
-	    owner   => "root",
-	    group   => "root",
-	    mode    => "0440",
-	    content => template("monit/check_device.monitrc.erb"),
-	    notify  => Service["monit"],
-	  }
+	 	file {"/etc/monit/conf.d/device_$name.conf":
+	    	ensure  => $ensure,
+	    	owner   => "root",
+	    	group   => "root",
+	    	mode    => "0440",
+	    	content => template("monit/check_device.monitrc.erb"),
+	    	notify  => Service["monit"],
+	  	}
   }
 
   if $mismatch_cnt_id {
-    if !defined(Monit::Predefined::Checkmdadm["monit_mdadm"]) {
-      monit::predefined::checkmdadm{"monit_mdadm":}
-    }
+    	if !defined(File["/etc/monit/scripts/check-mdstat.sh"]) {
+		  	file { "/etc/monit/scripts/check-mdstat.sh":
+		    	ensure  => $ensure,
+		    	owner   => "root",
+		    	group   => "root",
+		    	mode    => "0550",
+		    	content => template("monit/checkscripts/check_mdstat.sh.erb"),
+		  	}
+    	}
 
-    if !defined(File["/etc/monit/scripts/check-mdstat.sh"]) {
-		  file { "/etc/monit/scripts/check-mdstat.sh":
-		    ensure  => $ensure,
-		    owner   => "root",
-		    group   => "root",
-		    mode    => "0550",
-		    content => template("monit/checkscripts/check_mdstat.sh.erb"),
-		  }
-    }
+    	if !defined(File["/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh"]) {
+      		file {"/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh":
+	      		ensure => link,
+	      		target => "/etc/monit/scripts/check-mdstat.sh",
+	      		require => File["/etc/monit/scripts/check-mdstat.sh"],
+	      		before  => Service["monit"]
+	    	}
+    	}
 
-    if !defined(File["/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh"]) {
-      file {"/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh":
-	      ensure => link,
-	      target => "/etc/monit/scripts/check-mdstat.sh",
-	      require => File["/etc/monit/scripts/check-mdstat.sh"],
-	      before  => Service["monit"]
-	    }
-    }
-
-    ::monit::check::programm{"check-md-${mismatch_cnt_id}-stat":
-      ensure        => $ensure,
-      scriptpath    => "/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh",
-      depends_on    => ["mdadm"],
-      customlines   => ["if status != 0 then alert"],
-      require       => File["/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh"],
-    }
-  }
+    	::monit::check::programm{"check-md-${mismatch_cnt_id}-stat":
+      		ensure        => $ensure,
+      		scriptpath    => "/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh",
+      		depends_on    => ["mdadm"],
+      		customlines   => ["if status != 0 then alert"],
+      		require       => File["/etc/monit/scripts/check-md-${mismatch_cnt_id}-stat.sh"],
+    	}
+  	}
 }

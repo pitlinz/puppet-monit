@@ -6,11 +6,13 @@
 if [ -f /proc/mdstat ]; then
 	NOE=`/bin/cat /proc/mdstat | /bin/grep -c "_U"`
 	if [ $NOE -gt 0 ]; then
-		exit $NOD
+		echo "Error Disk missing"
+		exit $NOE
 	fi
 	NOE=`/bin/cat /proc/mdstat | /bin/grep -c "U_"`
 	if [ $NOE -gt 0 ]; then
-		exit $NOD
+		echo "Error Disk missing"
+		exit $NOE
 	fi
 fi
 

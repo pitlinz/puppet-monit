@@ -57,8 +57,8 @@ class monit::predefined::checkmdadm(
 		}
   	}
 
-	if !defined(File["/etc/monit/scripts/check_mdresyncdelay.sh"]) {
-		file { "/etc/monit/scripts/check_mdresyncdelay.sh":
+	if !defined(File["/etc/monit/scripts/check-mdresyncdelay.sh"]) {
+		file { "/etc/monit/scripts/check-mdresyncdelay.sh":
 			ensure  => $ensure,
 			owner   => "root",
 			group   => "root",
@@ -69,14 +69,14 @@ class monit::predefined::checkmdadm(
 
 	monit::check::programm {"mdadm_checkresync":
 		ensure      => $ensure,
-		scriptpath  => "/etc/monit/scripts/check_mdresyncdelay.sh",
+		scriptpath  => "/etc/monit/scripts/check-mdresyncdelay.sh",
 		depends_on  => ["mdadm"],
 		customlines => ["if status != 0 then alert"],
-		require     => File["/etc/monit/scripts/check_mdresyncdelay.sh"],
+		require     => File["/etc/monit/scripts/check-mdresyncdelay.sh"],
 	}
 
-	if !defined(File["/etc/monit/scripts/check_mdup.sh"]) {
-		file { "/etc/monit/scripts/check_mdup.sh":
+	if !defined(File["/etc/monit/scripts/check-mdup.sh"]) {
+		file { "/etc/monit/scripts/check-mdup.sh":
 			ensure  => $ensure,
 			owner   => "root",
 			group   => "root",
@@ -87,10 +87,10 @@ class monit::predefined::checkmdadm(
 
 	monit::check::programm {"mdadm_checkup":
 		ensure      => $ensure,
-		scriptpath  => "/etc/monit/scripts/check_mdup.sh",
+		scriptpath  => "/etc/monit/scripts/check-mdup.sh",
 		depends_on  => ["mdadm"],
-		customlines => ["if status != 0 then alert"],
-		require     => File["/etc/monit/scripts/check_mdup.sh"],
+		customlines => ["if status != 0 then alert", "alert ${::monit::alert} with reminder on 30 cycles"],
+		require     => File["/etc/monit/scripts/check-mdup.sh"],
 	}
 
 }

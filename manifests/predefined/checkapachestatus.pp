@@ -20,8 +20,8 @@ class monit::predefined::checkapachestatus (
 	]
 ) {
 
-	require apache
-	require	apache::mod::status
+
+	class{"apache::mod::status":}
 
 	host {"status.apache":
 	    ensure  => present,
