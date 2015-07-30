@@ -8,12 +8,21 @@
 #
 class monit::predefined::checkiscdhcp(
   $ensure=present,
+  $monitorconf = true,
 ) {
 
-  	monit::check::file{"dhcpd_conf":
-    	ensure      => $ensure,
-    	filepath => "/etc/dhcp/dhcpd.conf",
-    	customlines => ["if failed checksum then alert"],
+	if monitorconf == true {
+	  	monit::check::file{"dhcpd_conf":
+	    	ensure      => $ensure,
+	    	filepath => "/etc/dhcp/dhcpd.conf",
+	    	customlines => ["if failed checksum then alert"],
+	  	}
+	  	$dhcpdepends = ["dhcpd_conf","dhcpd_rc"]
+  	} else {
+  	    file{"/etc/monit/conf.d/file_dhcpd_conf.conf":
+  	        ensure => absent,
+		}
+  	    $dhcpdepends = ["dhcpd_rc"]
   	}
 
   	monit::check::file{"dhcpd_rc":
@@ -32,7 +41,7 @@ class monit::predefined::checkiscdhcp(
     	pidfile     => "/var/run/dhcp-server/dhcpd.pid",
     	start       => "/etc/init.d/isc-dhcp-server start",
     	stop        => "/etc/init.d/isc-dhcp-server stop",
-    	depends_on  => ["dhcpd_conf","dhcpd_rc"],
+    	depends_on  => $dhcpdepends,
     	customlines => [
       		"if failed host 127.0.0.1 port 67 type udp then restart",
       		"if 5 restarts within 5 cycles then timeout"
