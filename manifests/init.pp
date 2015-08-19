@@ -37,15 +37,37 @@ class monit(
 	$checkpuppet    = true,
 ) {
 
-	# The package
-	package { "monit":
-		ensure => installed,
+	case $::osfamily {
+	    'RedHat': {
+			exec{"install_monit_5":
+			    command => '/usr/bin/rpm  -ivh http://dl.fedoraproject.org/pub/epel/7/x86_64/m/monit-5.6-1.el7.x86_64.rpm',
+				creates => '/etc/monitrc'
+			}
+
+			$monitrc 	= '/etc/monitrc'
+			$monitrcreq = Exec["install_monit_5"]
+			$monitconf 	= '/etc/monit.d'
+	    }
+		default: {
+			if !defined(Package["monit"]) {
+				package { "monit":
+					ensure => installed,
+				}
+			}
+
+			$monitrc 	= '/etc/monit/monitrc'
+			$monitrcreq = Package["monit"]
+			$monitconf 	= '/etc/monit/conf.d'
+
+		}
 	}
+
+
 
 	# The service
 	service { "monit":
 		ensure  => running,
-		require => Package["monit"],
+		require => $monitrcreq,
 	}
 
 	# How to tell monit to reload its configuration
@@ -60,8 +82,9 @@ class monit(
 		group   => "root",
 		mode    => "0400",
 		notify  => Exec["monit reload"],
-		require => Package["monit"],
+		require => $monitrcreq,
 	}
+
 
 	# The main configuration directory, this should have been provided by
 	# the "monit" package, but we include it just to be sure.
@@ -72,15 +95,15 @@ class monit(
 
 	# The configuration snippet directory.  Other packages can put
 	# *.conf files into this directory, and monit will include them.
-	file { "/etc/monit/conf.d":
+	file { "${monitconf}":
 			ensure  => directory,
 			mode    => "0700",
-			require => Package["monit"],
+			require => $monitrcreq,
 			before  => Service["monit"]
 	}
 
 	# The main configuration file
-	file { "/etc/monit/monitrc":
+	file { "${monitrc}":
 		content => template("monit/monitrc.erb"),
 		before  => Service["monit"]
 	}
@@ -108,7 +131,7 @@ class monit(
     	default => 16,
   }
 
-  	file { "/etc/monit/conf.d/system.conf":
+  	file { "${monitconf}/system.conf":
     	content => template("monit/check_system.erb"),
     	before  => Service["monit"]
   	}
@@ -134,6 +157,11 @@ class monit(
     	mode    => "0755",
   	}
 
+  	file { "/var/lib/monit/events":
+    	ensure => "directory",
+    	mode    => "0755",
+  	}
+
 	if $checkpuppet {
 	    case $puppetversion {
 	        /^2.*/: {
@@ -151,7 +179,7 @@ class monit(
 	  	}
 	}
 
-	file {"/etc/monit/conf.d/process_puppet_agent.conf":
+	file {"${monitconf}/process_puppet_agent.conf":
 	    ensure => absent
 	}
 }

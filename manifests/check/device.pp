@@ -71,7 +71,7 @@ define monit::check::device(
   }
 
   if $devpath != '' and $mntptn != '' and $fstype != 'nfs' and $fstype != 'lvm' {
-	 	file {"/etc/monit/conf.d/device_$name.conf":
+	 	file {"${::moint::monitconf}/device_$name.conf":
 	    	ensure  => $ensure,
 	    	owner   => "root",
 	    	group   => "root",

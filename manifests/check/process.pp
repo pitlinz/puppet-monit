@@ -35,7 +35,7 @@ define monit::check::process($ensure=present, $process=$name,
                              $stop_extras="",
                              $depends_on=[],
                              $customlines=[]) {
-	file {"/etc/monit/conf.d/process_$name.conf":
+	file {"${::moint::monitconf}/process_$name.conf":
 		ensure  => $ensure,
 		owner   => "root",
 		group   => "root",

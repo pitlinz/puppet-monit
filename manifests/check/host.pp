@@ -26,7 +26,7 @@ define monit::check::host($ensure=present,
                              $stop_extras="",
                              $depends_on=[],
                              $customlines="") {
-  file {"/etc/monit/conf.d/host_$name.conf":
+  file {"${::moint::monitconf}/host_$name.conf":
     ensure  => $ensure,
     owner   => "root",
     group   => "root",

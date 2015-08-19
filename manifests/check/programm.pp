@@ -22,7 +22,7 @@ define monit::check::programm(
 		  $customlines=""
   ) {
 
-  file {"/etc/monit/conf.d/programm_$name.conf":
+  file {"${::moint::monitconf}/programm_$name.conf":
     ensure  => $ensure,
     owner   => "root",
     group   => "root",

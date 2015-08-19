@@ -19,42 +19,48 @@ class monit::predefined::checkapachestatus (
 	    "if 30 restarts within 60 cycles then timeout",
 	]
 ) {
+    include monit
 
-
-	class{"apache::mod::status":}
 
 	host {"status.apache":
 	    ensure  => present,
 	    ip      => "127.0.0.1"
 	}
 
-	file {"/var/www/apachestatus/":
-		ensure => directory,
-		owner  => "www-data",
-		group  => "www-data",
-		mode   => "0550",
-		require => Package["apache2"]
-  	}
+	if defined(Package["apache2"]) {
+		file {"/var/www/apachestatus/":
+			ensure => directory,
+			owner  => "www-data",
+			group  => "www-data",
+			mode   => "0550",
+			require => Package["apache2"]
+	  	}
 
-	file {"/var/www/apachestatus/index.html":
-		ensure  => present,
-		mode    => "0444",
-		content => "<html><head><title>apachestatus</title></heady><body><h1>It works</h1></body></html>\n",
-		require => File["/var/www/apachestatus/"]
-	}
+		file {"/var/www/apachestatus/index.html":
+			ensure  => present,
+			mode    => "0444",
+			content => "<html><head><title>apachestatus</title></heady><body><h1>It works</h1></body></html>\n",
+			require => File["/var/www/apachestatus/"]
+		}
 
-	apache::vhost{"status.apache":
-		priority        => $priority,
-		port            => '80',
-		docroot         => '/var/www/apachestatus/',
-		custom_fragment => "<Location /server-status>\n  SetHandler server-status\n</Location>\n",
-	}
 
-	monit::predefined::checkapache {"apache_status":
-		conffile    => "/etc/apache2/sites-enabled/${priority}-status.apache.conf",
-		checkhost   => "status.apache",
-		before      => Service["monit"],
-		customlines => $monitchecks
+		if defined(Class["apache"]) {
+			apache::vhost{"status.apache":
+				priority        => $priority,
+				port            => '80',
+				docroot         => '/var/www/apachestatus/',
+				custom_fragment => "<Location /server-status>\n  SetHandler server-status\n</Location>\n",
+			}
+		}
+
+		monit::predefined::checkapache {"apache_status":
+			conffile    => "/etc/apache2/sites-enabled/${priority}-status.apache.conf",
+			checkhost   => "status.apache",
+			before      => Service["monit"],
+			customlines => $monitchecks
+		}
+
 	}
 
 }
+

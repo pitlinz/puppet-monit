@@ -33,17 +33,16 @@ set idfile /var/lib/monit/id
 set statefile /var/lib/monit/state
   
 <%- if http_port != '' -%>
-set httpd port <%= @http_port %>
-<%- if @http_secret != '' then -%>	allow <%= @http_user %>:<%= @http_secret %><%- end -%>	
-	allow localhost
-	allow <%= fqdn %>
-	allow <%= ipaddress %>
-<%- if @allowips.size != 0 then -%>
-	<% allowips.to_a.each do |ip| -%>
-	allow <%= ip %>
-	<% end -%>	
-<%- end -%>
-<%- end -%>
+set httpd port <%= @http_port -%>
+	<%- if @http_secret != '' then -%>	
+		allow <%= @http_user %>:<%= @http_secret %>	
+	<%- else -%><%- if @allowips.size != 0 then -%><% allowips.to_a.each do |ip| -%>
+		allow <%= ip %>
+	<%- end -%><%- else -%>
+		allow localhost
+		<%- if @ipaddress != '' then -%>allow <%= ipaddress %><%- end -%> 	
+	<%- end -%><%- end -%>
+<%- end %>
 
 <%- if @mailserver.size != 0 then -%> 
 set mailserver 
@@ -83,4 +82,4 @@ set mail-format {
 
 
 # Include settings from other files
-include /etc/monit/conf.d/*.conf
+include <%= monitconf %>/*.conf
