@@ -6,11 +6,9 @@ check process <%= name %>
   with pidfile "<%= pidfile %>"
 	start program = "<%= start %>" <%= start_extras %>
 	stop program  = "<%= stop %>" <%= stop_extras %>
-<% if @depends_on.size != 0 then -%>
-	<%- depends_on.to_a.each do |othercheck| -%>
+<% if @depends_on.size != 0 then -%><%- depends_on.to_a.each do |othercheck| -%>
 	depends on <%= othercheck %>
-	<%- end -%>
-<%- end -%>
+<%- end -%><%- end -%>
 <% if @customlines.size != 0 then -%>
 	<%- customlines.to_a.each do |line| -%>
 	<%= line %>

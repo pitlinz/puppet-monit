@@ -7,19 +7,24 @@
 # Actions:
 #   The following actions gets taken by this defined type:
 class monit::predefined::checksshd(
-  $ensure   = present,
-  $sshport  = "22",
+  $ensure   	= present,
+  $sshport  	= "22",
+  $monitorconf 	= true,
 ) {
 
-	monit::check::file{"sshd_conf":
-    	filepath => "/etc/ssh/sshd_config",
-    	customlines => ["if failed checksum then alert"],
+	if $monitorconf == true {
+		monit::check::file{"sshd_conf":
+	    	filepath => "/etc/ssh/sshd_config",
+	    	customlines => ["if failed checksum then alert"],
+	  	}
+	  	$depends_on  = ["sshd_conf"]
+  	} else {
+	  	$depends_on  = []
   	}
 
   	$pidfile     = "/var/run/sshd.pid"
   	$start       = "/etc/init.d/ssh start"
   	$stop        = "/etc/init.d/ssh stop"
-  	$depends_on  = ["sshd_conf"]
   	$customlines = ["if 4 restarts within 6 cycles then timeout"]
 
   	if !is_array($sshport) {
@@ -28,7 +33,7 @@ class monit::predefined::checksshd(
     	$portlist = $sshport
   	}
 
-  	file {"/etc/monit/conf.d/process_sshd.conf":
+  	file {"${::monit::monitconf}/process_sshd.conf":
     	ensure  => $ensure,
     	owner   => "root",
     	group   => "root",

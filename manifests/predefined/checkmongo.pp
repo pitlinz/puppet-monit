@@ -13,12 +13,12 @@ class monit::predefined::checkmongo(
 	$depends_on			= [],
 	$customlines		= [],
 ) {
-  file {"/etc/monit/conf.d/process_mongodb.conf":
-    owner   => "root",
-    group   => "root",
-    mode    => "0400",
-    content => template("monit/predefined/check_process_mongodb.monitrc.erb"),
-    notify  => Service["monit"],
-  }
 
+	file {"/etc/monit/conf.d/process_mongodb.conf":
+		owner   => "root",
+		group   => "root",
+		mode    => "0400",
+		content => template("monit/predefined/check_process_mongodb.monitrc.erb"),
+		notify  => Service["monit"],
+	}
 }

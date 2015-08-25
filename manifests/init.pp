@@ -30,8 +30,8 @@ class monit(
 	$http_secret    = 'cHangeMe',
 	$allowips		= ['127.0.0.1'],
 
-	$pool_interval  = 120,
-	$start_delay    = 240,
+	$pool_interval  = 60,
+	$start_delay    = 120,
 	$mmoniturl      = '',
 
 	$checkpuppet    = true,

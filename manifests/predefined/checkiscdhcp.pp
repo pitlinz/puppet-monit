@@ -7,8 +7,9 @@
 #
 #
 class monit::predefined::checkiscdhcp(
-  $ensure=present,
-  $monitorconf = true,
+  $ensure		= present,
+  $monitorconf 	= true,
+  $pidfile		= '',
 ) {
 
 	if monitorconf == true {
@@ -36,9 +37,19 @@ class monit::predefined::checkiscdhcp(
     	]
   	}
 
+  	if $pidfile != '' {
+  	    $dhcpdpidfile = $pidfile
+  	} else {
+		case $::lsbdistid {
+			default: {
+				$dhcpdpidfile = "/var/run/dhcpd.pid"
+			}
+		}
+	}
+
   	monit::check::process{"dhcpd":
     	ensure      => $ensure,
-    	pidfile     => "/var/run/dhcp-server/dhcpd.pid",
+    	pidfile     => $dhcpdpidfile,
     	start       => "/etc/init.d/isc-dhcp-server start",
     	stop        => "/etc/init.d/isc-dhcp-server stop",
     	depends_on  => $dhcpdepends,

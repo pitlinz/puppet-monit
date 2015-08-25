@@ -20,16 +20,16 @@ define monit::check::programm(
 		  $stop_extras="",
 		  $depends_on=[],
 		  $customlines=""
-  ) {
+) {
 
-  file {"${::moint::monitconf}/programm_$name.conf":
-    ensure  => $ensure,
-    owner   => "root",
-    group   => "root",
-    mode    => 0400,
-    content => template("monit/check_programm.monitrc.erb"),
-    notify  => Service["monit"],
-  }
+	include monit
 
-
+	file {"${::monit::monitconf}/programm_$name.conf":
+	    ensure  => $ensure,
+	    owner   => "root",
+	    group   => "root",
+	    mode    => 0400,
+	    content => template("monit/check_programm.monitrc.erb"),
+	    notify  => Service["monit"],
+	}
 }

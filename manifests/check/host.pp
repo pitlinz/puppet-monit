@@ -25,13 +25,16 @@ define monit::check::host($ensure=present,
                              $stop=undef,
                              $stop_extras="",
                              $depends_on=[],
-                             $customlines="") {
-  file {"${::moint::monitconf}/host_$name.conf":
-    ensure  => $ensure,
-    owner   => "root",
-    group   => "root",
-    mode    => 0400,
-    content => template("monit/check_host.monitrc.erb"),
-    notify  => Service["monit"],
-  }
+                             $customlines=""
+) {
+	include monit
+
+  	file {"${::monit::monitconf}/host_$name.conf":
+	    ensure  => $ensure,
+	    owner   => "root",
+	    group   => "root",
+	    mode    => 0400,
+	    content => template("monit/check_host.monitrc.erb"),
+	    notify  => Service["monit"],
+	}
 }

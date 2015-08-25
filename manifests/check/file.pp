@@ -30,13 +30,17 @@ define monit::check::file($ensure=present,
                              $start_extras="",
                              $stop=undef,
                              $stop_extras="",
-                             $customlines=[]) {
-  file {"${::moint::monitconf}/file_$name.conf":
-    ensure  => $ensure,
-    owner   => "root",
-    group   => "root",
-    mode    => "0400",
-    content => template("monit/check_file.monitrc.erb"),
-    notify  => Service["monit"],
-  }
+                             $customlines=[]
+) {
+    include monit
+
+  	file {"${::monit::monitconf}/file_${name}.conf":
+	    ensure  => $ensure,
+	    owner   => "root",
+	    group   => "root",
+	    mode    => "0400",
+	    content => template("monit/check_file.monitrc.erb"),
+	    notify  => Service["monit"],
+	    require	=> File["${::monit::monitconf}"],
+	}
 }
