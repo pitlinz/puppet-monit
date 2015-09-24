@@ -23,6 +23,11 @@ else
 		MDFILTER=$PART
 	fi
 fi
+if [ "$1" == "autofix" -o "$2" == "autofix" ]; then
+	AUTOFIX=1
+else
+	AUTOFIX=0
+fi
 
 
 DATA=0
@@ -30,6 +35,12 @@ for file in /sys/block/md${MDFILTER}/md/mismatch_cnt; do
 	(( DATA += `cat $file`))
     MD_NAME=`echo $file | awk 'BEGIN { FS = "/" } ; { print $4 }'`
     PERF_DATA+="$MD_NAME=`cat $file` "
+    if [ $AUTOFIX -gt 0 ]; then
+    	if [ `cat $file` -gt $WARN_LIMIT ]; then
+    		MDDIR=`dirname $file`
+    		echo repair >${MDDIR}/sync_action
+    	fi 	 
+    fi  
 done
 
 if [ $DATA -lt $WARN_LIMIT ]; then

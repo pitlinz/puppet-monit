@@ -71,7 +71,7 @@ class monit::predefined::checkmdadm(
 		ensure      => $ensure,
 		scriptpath  => "/etc/monit/scripts/check-mdresyncdelay.sh",
 		depends_on  => ["mdadm"],
-		customlines => ["if status != 0 then alert"],
+		customlines => ["if status != 0 for 20 cycles then alert"],
 		require     => File["/etc/monit/scripts/check-mdresyncdelay.sh"],
 	}
 
@@ -92,5 +92,14 @@ class monit::predefined::checkmdadm(
 		customlines => ["if status != 0 then alert", "alert ${::monit::alert} with reminder on 30 cycles"],
 		require     => File["/etc/monit/scripts/check-mdup.sh"],
 	}
+
+	monit::check::programm {"mdadm_checkup_emergency":
+		ensure      => $ensure,
+		scriptpath  => "/etc/monit/scripts/check-mdup.sh",
+		depends_on  => ["mdadm"],
+		customlines => ["if status != 0 for 20 cycles then alert", "alert ${::monit::emergencyalert} with reminder on 120 cycles"],
+		require     => File["/etc/monit/scripts/check-mdup.sh"],
+	}
+
 
 }

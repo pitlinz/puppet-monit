@@ -41,6 +41,13 @@ class monit::predefined::checkiscdhcp(
   	    $dhcpdpidfile = $pidfile
   	} else {
 		case $::lsbdistid {
+		    "Ubuntu": {
+		      case $::lsbdistcodename {
+		          default: {
+		              $dhcpdpidfile = "/var/run/dhcp-server/dhcpd.pid"
+		          }
+		      }
+		    }
 			default: {
 				$dhcpdpidfile = "/var/run/dhcpd.pid"
 			}
