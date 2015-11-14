@@ -4,10 +4,10 @@
 
 check host <%= name %>
   with address <%= chkaddress %>
-<% if @start -%>
+<% if @start then -%>
   start program = "<%= start %>" <%= start_extras %>
 <% end -%>
-<% if @stop -%>
+<% if @stop then -%>
   stop program  = "<%= stop %>" <%= stop_extras %>
 <% end -%>
 <% if @depends_on.size != 0 then -%>

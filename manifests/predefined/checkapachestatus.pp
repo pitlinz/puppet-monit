@@ -44,17 +44,8 @@ class monit::predefined::checkapachestatus (
 		}
 
 
-		if defined(Class["apache"]) {
-			apache::vhost{"status.apache":
-				priority        => $priority,
-				port            => '80',
-				docroot         => '/var/www/apachestatus/',
-				custom_fragment => "<Location /server-status>\n  SetHandler server-status\n</Location>\n",
-			}
-		}
-
-		monit::predefined::checkapache {"apache_status":
-			conffile    => "/etc/apache2/sites-enabled/${priority}-status.apache.conf",
+		::monit::predefined::checkapache {"apache_status":
+			conffiles    => ["/etc/apache2/sites-enabled/${priority}-status.apache.conf"],
 			checkhost   => "status.apache",
 			before      => Service["monit"],
 			customlines => $monitchecks

@@ -4,10 +4,7 @@
  */
 define monit::predefined::checkapache(
   $ensure       = present,
-  $conffile     = '',
-  $pidfile      = false,
-  $start        = "/etc/init.d/apache2 start",
-  $stop         = "/etc/init.d/apache2 stop",
+  $conffiles    = [],
   $depends_on   = [],
   $customlines  = [],
 
@@ -16,9 +13,13 @@ define monit::predefined::checkapache(
 
 ) {
 
+	$pidfile      = "$::monitapache2pid"
+	$start        = "/etc/init.d/apache2 start"
+	$stop         = "/etc/init.d/apache2 stop"
+
 	if $conffile != '' {
 		$depends_on_conf = "apacheconf_${name}"
-		monit::check::file{$depends_on_conf:
+		::monit::check::file{$depends_on_conf:
 			ensure    => $ensure,
 			filepath  => $conffile,
 			before    => File["/etc/monit/conf.d/process_apache_${name}.conf"]
