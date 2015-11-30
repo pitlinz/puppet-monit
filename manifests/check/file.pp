@@ -24,23 +24,28 @@
 #   }
 # (end)
 
-define monit::check::file($ensure=present,
-                             $filepath=undef,
-                             $start=undef,
-                             $start_extras="",
-                             $stop=undef,
-                             $stop_extras="",
-                             $customlines=[]
+define monit::check::file(
+	$ensure=present,
+	$filepath=undef,
+	$start=undef,
+	$start_extras="",
+	$stop=undef,
+	$stop_extras="",
+	$customlines=[]
 ) {
+
     include monit
 
-  	file {"${::monit::monitconf}/file_${name}.conf":
-	    ensure  => $ensure,
-	    owner   => "root",
-	    group   => "root",
-	    mode    => "0400",
-	    content => template("monit/check_file.monitrc.erb"),
-	    notify  => Service["monit"],
-	    require	=> File["${::monit::monitconf}"],
+	if !defined(File["${::monit::monitconf}/file_${name}.conf"]) {
+	  	file {"${::monit::monitconf}/file_${name}.conf":
+		    ensure  => $ensure,
+		    owner   => "root",
+		    group   => "root",
+		    mode    => "0400",
+		    content => template("monit/check_file.monitrc.erb"),
+		    notify  => Service["monit"],
+		    require	=> File["${::monit::monitconf}"],
+		}
 	}
+
 }

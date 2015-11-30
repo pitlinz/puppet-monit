@@ -21,37 +21,31 @@ class monit::predefined::checkapachestatus (
 ) {
     include monit
 
-
 	host {"status.apache":
 	    ensure  => present,
 	    ip      => "127.0.0.1"
 	}
 
-	if defined(Package["apache2"]) {
-		file {"/var/www/apachestatus/":
-			ensure => directory,
-			owner  => "www-data",
-			group  => "www-data",
-			mode   => "0550",
-			require => Package["apache2"]
-	  	}
+	file {"/var/www/apachestatus/":
+		ensure => directory,
+		owner  => "www-data",
+		group  => "www-data",
+		mode   => "0550",
+		require => Package["apache2"]
+  	}
 
-		file {"/var/www/apachestatus/index.html":
-			ensure  => present,
-			mode    => "0444",
-			content => "<html><head><title>apachestatus</title></heady><body><h1>It works</h1></body></html>\n",
-			require => File["/var/www/apachestatus/"]
-		}
-
-
-		::monit::predefined::checkapache {"apache_status":
-			conffiles    => ["/etc/apache2/sites-enabled/${priority}-status.apache.conf"],
-			checkhost   => "status.apache",
-			before      => Service["monit"],
-			customlines => $monitchecks
-		}
-
+	file {"/var/www/apachestatus/index.html":
+		ensure  => present,
+		mode    => "0444",
+		content => "<html><head><title>apachestatus</title></heady><body><h1>It works</h1></body></html>\n",
+		require => File["/var/www/apachestatus/"]
 	}
 
+	::monit::predefined::checkapache {"apache_status":
+		conffiles    => ["/etc/apache2/sites-enabled/${priority}-status.apache.conf"],
+		checkhost   => "status.apache",
+		before      => Service["monit"],
+		customlines => $monitchecks
+	}
 }
 

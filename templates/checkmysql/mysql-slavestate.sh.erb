@@ -17,17 +17,42 @@ MYSQLCMD="$MYSQLCMD -u <%= mysqluser %>"
 MYSQLCMD="$MYSQLCMD -p<%= mysqlpwd%>"
 <%- end -%>
 
-echo "" > /tmp/vars
-cat /etc/mysql/debian.cnf | grep -v '#'  | while IFS='= ' read var val; do
-    if [[ $var == \[*] ]]; then
-        section=$var
-    elif [[ $val ]]; then
-        if [ "$section"  == "[client]" ]; then
-              echo "MYSQL_$var=$val" >> /tmp/vars
-        fi
-   fi
-done
+if [ -f  /etc/mysql/debian.cnf ]; then
+	echo "" > /tmp/vars
+	cat /etc/mysql/debian.cnf | grep -v '#'  | while IFS='= ' read var val; do
+	    if [[ $var == \[*] ]]; then
+	        section=$var
+	    elif [[ $val ]]; then
+	        if [ "$section"  == "[client]" ]; then
+	              echo "MYSQL_$var=$val" >> /tmp/vars
+	        fi
+	   fi
+	done
+	. /tmp/vars
+	rm /tmp/vars
+	mysql -h $MYSQL_host -u $MYSQL_user -p$MYSQL_password -e "show slave status \G" > /tmp/mysqlslave.status
+else 
+	$MYSQLCMD  -e "show slave status \G" > /tmp/mysqlslave.status
+fi
 
-. /tmp/vars
-rm /tmp/vars
+
+
+if [ `grep -c "Slave.*Running: Yes" /tmp/mysqlslave.status` -lt 2 ]; then
+	echo "slave not running" 
+	exit 1
+fi
+
+if [ `grep "Last_Errno" /tmp/mysqlslave.status | cut -f2 -d':' ` -gt 0 ]; then
+	echo "error" 
+	exit 2
+fi
+
+
+if [ `grep "Seconds_Behind_Master" /tmp/mysqlslave.status | cut -f2 -d':'` -gt 600 ]; then 
+	echo "more then 600 sec behind"
+	exit 150
+fi
+
+echo "slave is up and in less then 600 sec behind"
+exit 0
 

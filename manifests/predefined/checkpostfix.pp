@@ -6,7 +6,7 @@
 # Actions:
 #
 #
-define monit::predefined::checkpostfix(
+class monit::predefined::checkpostfix(
   $ensure=present,
 ) {
 

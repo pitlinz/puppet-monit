@@ -1,0 +1,86 @@
+#!/bin/bash
+#
+
+. /etc/environment
+
+### BEGIN INIT INFO
+# Provides:                     mmonit
+# Required-Start:               $local_fs $network $syslog
+# Required-Stop:                $local_fs $network $syslog
+# Default-Start:                2 3 4 5
+# Default-Stop:                 0 1 6                                                                                                                                                           
+# Short-Description:            provides mmonit server                                                                                                                                          
+# Description:                  starts/stops mmonit server                                                                                                                                      
+### END INIT INFO                                                                                                                                                                               
+
+# install: 
+# update-rc.d mmonit defaults 90
+# set -x
+
+DESC="mmonit"
+NAME=mmonit
+DAEMON=/opt/mmonit/bin/$NAME
+SCRIPTNAME=/etc/init.d/$NAME
+PIDFILE=/var/run/mmonit.pid
+
+# Gracefully exit if the package has been removed.
+test -x $DAEMON || exit 0
+
+d_start() {
+        $DAEMON -p /var/run/ || echo -en "\n already running"
+}
+
+d_stop() {
+        kill -QUIT `cat $PIDFILE` || echo -en "\n not running"
+}
+
+d_reload() {
+        kill -HUP `cat $PIDFILE` || echo -en "\n can't reload"
+}
+
+case "$1" in
+        start)
+            echo -n "Starting $DESC: $NAME"
+            d_start
+            echo "."
+            ;;
+        stop)
+            echo -n "Stopping $DESC: $NAME"
+            d_stop
+            echo "."
+            ;;
+        reload)
+			echo -n "Reloading $DESC configuration..."
+			d_reload
+			echo "."
+			;;
+        restart)
+			echo -n "Restarting $DESC: $NAME"
+			d_stop
+			sleep 5
+			d_start
+			echo "."
+			;;
+     	status)
+     		if [ ! -f $PIDFILE ]; then
+     			echo "mmonit not started"
+     			exit 3
+     		fi
+     		PID=`cat $PIDFILE`
+     		if [ `ps aux | grep mmonit | grep -c $PID` -gt 0 ]; then
+     			echo "mmonit is running"
+     			exit 0
+     		else
+     			echo "mmonit not running"
+     			exit 1
+     		fi
+			;;     		
+        *)
+                echo "Usage: $SCRIPTNAME {start|stop|restart|reload}" >&2
+                exit 3
+                ;;
+esac
+
+
+
+

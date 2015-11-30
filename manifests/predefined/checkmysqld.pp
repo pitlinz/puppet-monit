@@ -29,7 +29,6 @@ class monit::predefined::checkmysqld(
 		stop        => "/usr/sbin/service mysql stop",
 		depends_on  => ["mysqld_conf"],
 		customlines => [
-			"if failed port ${port} then restart",
            	"if 2 restarts within 3 cycles then timeout"
        	]
 	}
@@ -63,7 +62,9 @@ class monit::predefined::checkmysqld(
 				ensure      => $ensure,
 				scriptpath  => "/etc/monit/scripts/mysql-connect-local.sh",
 				depends_on  => ["mysqlmaster"],
-				customlines => ["if status != 0 then alert"],
+				customlines => [
+					"if status != 0 then alert",
+				],
 				#require     => File["/etc/monit/scripts/mysql-connect-local.sh"],
 			}
 
@@ -75,7 +76,11 @@ class monit::predefined::checkmysqld(
 				ensure      => $ensure,
 				scriptpath  => "/etc/monit/scripts/mysql-slave-state.sh",
 				depends_on  => ["mysqld"],
-				customlines => ["if status != 0 then alert"],
+				customlines => [
+					"if status = 1 then alert",
+					"if status = 2 then alert",
+					"if status = 150 for 5 cycles then alert",
+				],
 			}
 
 		}

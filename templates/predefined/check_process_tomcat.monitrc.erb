@@ -1,0 +1,23 @@
+# Configuration snippet for tomcat7
+# 
+# This file is handled by puppet, all local modifications will be lost
+
+check process <%= @processname %> with pidfile "<%= @pidfile %>"
+	start program = "<%= start %>"
+	stop program  = "<%= stop %>"
+<%- if @depends_on_conf then -%>
+	depends_on <%= depends_on_conf %>
+<% end -%> 
+<%- if @depends_on.size != 0 then -%>
+	<% depends_on.to_a.each do |othercheck| -%>
+		depends on <%= othercheck %>
+	<% end -%>
+<% end -%>
+	if failed host <%= @checkhost %> port <%= checkport %> then alert
+	if failed host <%= @checkhost %> port <%= checkport %> for 3 cycles then restart
+	if 3 restarts within 12 cycles then timeout
+<% if @customlines.size != 0 then -%>
+	<% customlines.to_a.each do |line| -%>
+		<%= line %>
+	<% end -%>
+<% end -%>  

@@ -80,6 +80,11 @@ set mail-format {
              Monit
 }
 
+<%- if @mmoniturl != '' then -%>
+## Set mmonit url
+set mmonit <%= @mmoniturl %>
+<%- end -%>
+
 
 # Include settings from other files
 include <%= monitconf %>/*.conf
