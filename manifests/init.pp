@@ -20,166 +20,227 @@
 #
 
 class monit(
-	$alert    	  	= 'root@localhost',
-  	$emergencyalert = 'emergency@localhost',
-	$senderaddr     = "monit@${fqdn}",
-	$mailserver     = ['localhost'],
+    $version        = '5.25.1',
+    $dwnlpqath      = 'https://bitbucket.org/tildeslash/monit/downloads/',
 
-	$http_port      = '2812',
-	$http_user      = 'admin',
-	$http_secret    = 'cHangeMe',
-	$allowips		= ['127.0.0.1'],
+    $alert          = 'root@localhost',
+    $emergencyalert = 'emergency@localhost',
+    $senderaddr     = "monit@${::fqdn}",
+    $mailserver     = ['localhost'],
 
-	$pool_interval  = 60,
-	$start_delay    = 120,
-	$mmoniturl      = '',
+    $http_port      = '2812',
+    $http_user      = 'admin',
+    $http_secret    = 'cHangeMe',
+    $allowips       = ['127.0.0.1'],
 
-	$checkpuppet    = true,
+    $pool_interval  = 60,
+    $start_delay    = 120,
+    $mmoniturl      = '',
+
+    $checkpuppet    = true,
+
+    $syswait        = 80,
+    $memoryusage    = '90%'
 ) {
 
-	case $::osfamily {
-	    'RedHat': {
-			exec{"install_monit_5":
-			    command => '/usr/bin/rpm  -ivh http://dl.fedoraproject.org/pub/epel/7/x86_64/m/monit-5.6-1.el7.x86_64.rpm',
-				creates => '/etc/monitrc'
-			}
+    if !defined(Package['wget']) {
+        package{'wget':
+            ensure => latest
+        }
+    }
 
-			$monitrc 	= '/etc/monitrc'
-			$monitrcreq = Exec["install_monit_5"]
-			$monitconf 	= '/etc/monit.d'
-	    }
-		default: {
-			if !defined(Package["monit"]) {
-				package { "monit":
-					ensure => installed,
-				}
-			}
+    case $::operatingsystem {
+        'debian','ubuntu': {
+            case $::architecture {
+                'amd64': {
+                    $_dwnlurl = "${dwnlpqath}monit-${version}-linux-x64.tar.gz"
+                }
+                default: {
+                    $_dwnlurl = $_dwnlurl = "${dwnlpqath}monit-${version}.tar.gz"
+                }
+            }
 
-			$monitrc 	= '/etc/monit/monitrc'
-			$monitrcreq = Package["monit"]
-			$monitconf 	= '/etc/monit/conf.d'
+            $monitrc    = '/etc/monit/monitrc'
+            $monitrcreq = Package['wget']
+            $monitconf  = '/etc/monit/conf.d'
 
-		}
-	}
+            package{'monit':
+                ensure => absent,
+                before => File['/etc/init.d/monit']
+            }
+        }
 
+        default: {
+            $_dwnlurl   = "${dwnlpqath}monit-${version}.tar.gz"
+            $monitrc    = '/etc/monit/monitrc'
+            $monitrcreq = Exec["wget_${_dwnlurl}"]
+            $monitconf  = '/etc/monit/conf.d'
+        }
+    }
 
+    if !defined(File['/usr/src/downloads']) {
+        file{'/usr/src/downloads':
+            ensure => directory,
+            mode   => '0755'
+        }
+    }
 
-	# The service
-	service { "monit":
-		ensure  => running,
-		require => $monitrcreq,
-	}
+    $_dwnltarget = "/usr/src/downloads/monit-${version}.tar.gz"
 
-	# How to tell monit to reload its configuration
-	exec { "monit reload":
-		command     => "/usr/bin/monit reload",
-		refreshonly => true,
-	}
+    exec{"wget_${_dwnlurl}":
+        command => "/usr/bin/wget -O ${_dwnltarget} ${_dwnlurl}",
+        creates => $_dwnltarget,
+        require => [File['/usr/src/downloads'],Package['wget']],
+        notify  => Exec["untar_${_dwnltarget}"]
+    }
 
-	# Default values for all file resources
-	File {
-		owner   => "root",
-		group   => "root",
-		mode    => "0400",
-		notify  => Exec["monit reload"],
-		require => $monitrcreq,
-	}
+    exec{"untar_${_dwnltarget}":
+        command     => "/bin/tar -xzf ${_dwnltarget}",
+        cwd         => '/usr/src/downloads',
+        refreshonly => true,
+        notify      => Exec["cp_${_dwnltarget}"]
+    }
 
-
-	# The main configuration directory, this should have been provided by
-	# the "monit" package, but we include it just to be sure.
-	file { "/etc/monit":
-			ensure  => directory,
-			mode    => "0700",
-	}
-
-	# The configuration snippet directory.  Other packages can put
-	# *.conf files into this directory, and monit will include them.
-	file { "${monitconf}":
-			ensure  => directory,
-			mode    => "0700",
-			require => $monitrcreq,
-			before  => Service["monit"]
-	}
-
-	# The main configuration file
-	file { "${monitrc}":
-		content => template("monit/monitrc.erb"),
-		before  => Service["monit"]
-	}
-
-	# system check
-	$load1Alarm = $processorcount ? {
-		2 => 8,
-		3 => 12,
-	    4 => 16,
-	    5 => 20,
-	    6 => 24,
-	    7 => 28,
-	    8 => 32,
-	    default => 4,
-	}
-
-  	$load5Alarm = $processorcount ? {
-		2 => 24,
-		3 => 32,
-		4 => 40,
-		5 => 48,
-		6 => 56,
-		7 => 64,
-		8 => 72,
-    	default => 16,
-  }
-
-  	file { "${monitconf}/system.conf":
-    	content => template("monit/check_system.erb"),
-    	before  => Service["monit"]
-  	}
-
-	# Monit is disabled by default on debian / ubuntu
-	case $operatingsystem {
-		debian, ubuntu: {
-			file { "/etc/default/monit":
-				content => template("monit/etc_default_monit.erb"),
-				before  => Service["monit"]
-			}
-		}
-	}
+    exec{"cp_${_dwnltarget}":
+        command     => "/bin/cp /usr/src/downloads/monit-${version}/bin/* /usr/local/bin/",
+        refreshonly => true,
+        notify      => Service['monit']
+    }
 
 
-	file { "/etc/monit/scripts/":
-	    ensure => "directory",
-    	mode    => "0755",
-	}
+    file {'/etc/init.d/monit':
+        content => template('monit/init_monit.erb'),
+        before  => Service['monit'],
+        mode    => '0555',
+        #notify 	=> Exec["update-rc_monit"]
+    }
 
-  	file { "/var/lib/monit/":
-    	ensure => "directory",
-    	mode    => "0755",
-  	}
 
-  	file { "/var/lib/monit/events":
-    	ensure => "directory",
-    	mode    => "0755",
-  	}
+    if $::lsbdistcodename == 'precise' {
+        file{"/etc/rc${::runlevel}.d/S99monit":
+            ensure => link,
+            target => '/etc/init.d/monit',
+            before => Service['monit'],
+        }
+    } elsif $::runlevel == 5 {
+        exec{'update-rc_monit':
+            command => "/usr/sbin/update-rc.d monit defaults 90",
+            creates => "/etc/rc5.d/S05monit",
+            before  	=> Service['monit'],
+    #		    refreshonly	=> true,
+            unless		=> "/bin/ls /etc/rc5.d/S0* | /bin/grep -c monit"
+        }
+    }
 
-	if $checkpuppet {
-	    case $puppetversion {
-	        /^2.*/: {
-	            $puppetpidfile = "/var/puppet/run/agent.pid"
-	        }
-			default: {
-			    $puppetpidfile = "/var/run/puppet/agent.pid"
-			}
-	    }
+    # The service
+    service { 'monit':
+        ensure  => running,
+        require => $monitrcreq,
+        start	=> "/etc/init.d/monit start",
+        restart	=> "/etc/init.d/monit restart",
+        stop	=> "/etc/init.d/monit stop"
+    }
 
-		monit::check::process{"puppet":
-			pidfile => $puppetpidfile,
-		    start  =>  "/etc/init.d/puppet start",
-		    stop   =>  "/etc/init.d/puppet stop"
-	  	}
-	}
+    # How to tell monit to reload its configuration
+    exec { "monit reload":
+        command     => "/usr/local/bin/monit reload",
+        refreshonly => true,
+    }
 
-	file {"${monitconf}/process_puppet_agent.conf":
-	    ensure => absent
-	}
+    # Default values for all file resources
+    File {
+        owner   => "root",
+        group   => "root",
+        mode    => "0400",
+        notify  => Exec["monit reload"],
+        require => $monitrcreq,
+    }
+
+
+    # The main configuration directory, this should have been provided by
+    # the 'monit' package, but we include it just to be sure.
+    file { "/etc/monit":
+            ensure  => directory,
+            mode    => "0700",
+    }
+
+    # The configuration snippet directory.  Other packages can put
+    # *.conf files into this directory, and monit will include them.
+    file { "${monitconf}":
+            ensure  => directory,
+            mode    => "0700",
+            require => $monitrcreq,
+            before  => Service['monit']
+    }
+
+    # The main configuration file
+    file { "${monitrc}":
+        content => template("monit/monitrc.erb"),
+        before  => Service['monit']
+    }
+
+    file{ "/usr/local/etc/monitrc":
+        ensure => link,
+        target	=> $monitrc
+    }
+
+
+    # system check
+
+    $load1Alarm = $::processorcount + 1
+    $load5Alarm	= $::processorcount * 2 + 2
+
+    file { "${monitconf}/system.conf":
+        content => template("monit/check_system.erb"),
+        before  => Service['monit']
+    }
+
+    file { "/etc/monit/scripts/":
+        ensure => "directory",
+        mode    => "0755",
+    }
+
+    file { "/var/lib/monit/":
+        ensure => "directory",
+        mode    => "0755",
+    }
+
+    file { "/var/lib/monit/events":
+        ensure => "directory",
+        mode    => "0755",
+    }
+
+    if $checkpuppet {
+        case $puppetversion {
+            /^2.*/: {
+                $puppetpidfile = "/var/puppet/run/agent.pid"
+            }
+            default: {
+                $puppetpidfile = "/var/run/puppet/agent.pid"
+            }
+        }
+
+        monit::check::process{"puppet":
+            pidfile => $puppetpidfile,
+            start  =>  "/etc/init.d/puppet start",
+            stop   =>  "/etc/init.d/puppet stop"
+        }
+    }
+
+    file {"${monitconf}/process_puppet_agent.conf":
+        ensure => absent
+    }
+
+    if ('localhost' in $mailserver) {
+        if !defined(Package["postfix"]) {
+            package{"postfix": ensure => latest}
+        }
+
+        if !defined(Service["postfix"]) {
+            service{"postfix":
+                ensure => "running",
+                require	=> Package["postfix"]
+            }
+        }
+    }
 }

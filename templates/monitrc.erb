@@ -1,28 +1,28 @@
 # /etc/monit/monitrc - Monit Configuration file
-# 
+#
 # This file is handled by puppet, any local changes will be lost
 #
 #
 ## Start Monit in the background (run as a daemon):
 #
-set daemon <%= pool_interval %>
-#   with start delay 240   
-with start delay <%= start_delay %> 
-   
+set daemon <%= @pool_interval %>
+#   with start delay 240
+with start delay <%= @start_delay %> 
+
 ## Set syslog logging with the 'daemon' facility. If the FACILITY option is
 ## omitted, Monit will use 'user' facility by default. If you want to log to
 ## a standalone log file instead, specify the full path to the log file
 #
 # set logfile syslog facility log_daemon
-set logfile /var/log/monit.log   
-   
+set logfile /var/log/monit.log
+
 ## Set the location of the Monit id file which stores the unique id for the
 ## Monit instance. The id is generated and stored on first Monit start. By
 ## default the file is placed in $HOME/.monit.id.
 #
 # set idfile /var/.monit.id
 set idfile /var/lib/monit/id
-             
+
 #
 ## Set the location of the Monit state file which saves monitoring states
 ## on each cycle. By default the file is placed in $HOME/.monit.state. If
@@ -31,26 +31,26 @@ set idfile /var/lib/monit/id
 ## state will be lost on reboot which may be convenient in some situations.
 #
 set statefile /var/lib/monit/state
-  
+
 <%- if http_port != '' -%>
 set httpd port <%= @http_port -%>
-	<%- if @http_secret != '' then -%>	
-		allow <%= @http_user %>:<%= @http_secret %>	
+	<%- if @http_secret != '' then -%>
+		allow <%= @http_user %>:<%= @http_secret %>
 	<%- else -%><%- if @allowips.size != 0 then -%><% allowips.to_a.each do |ip| -%>
 		allow <%= ip %>
 	<%- end -%><%- else -%>
 		allow localhost
-		<%- if @ipaddress != '' then -%>allow <%= ipaddress %><%- end -%> 	
+		<%- if @ipaddress != '' then -%>allow <%= ipaddress %><%- end -%>
 	<%- end -%><%- end -%>
 <%- end %>
 
-<%- if @mailserver.size != 0 then -%> 
-set mailserver 
+<%- if @mailserver.size != 0 then -%>
+set mailserver
 	<% mailserver.to_a.each do |server| -%>
 		<%= server %>
-	<% end -%>	
-<%- else -%> 
-set mailserver <%= has_variable?("monit_mailserver") ? monit_mailserver : "localhost" %> 
+	<% end -%>
+<%- else -%>
+set mailserver <%= has_variable?("monit_mailserver") ? monit_mailserver : "localhost" %>
 <% end -%>
 
 ## By default Monit will drop alert events if no mail servers are available.
@@ -63,8 +63,8 @@ set mailserver <%= has_variable?("monit_mailserver") ? monit_mailserver : "local
 set eventqueue
 	basedir /var/lib/monit/events # set the base directory where events will be stored
     slots 100                     # optionally limit the queue size
-      
-      
+
+
 set alert <%= @alert %>
 
 set mail-format {

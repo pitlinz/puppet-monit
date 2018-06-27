@@ -1,0 +1,19 @@
+{
+  "logger": {
+    "title": "Remote Sync"
+  },
+  "uploadOnSave": true,
+  "useAtomicWrites": false,
+  "deleteLocal": false,
+  "hostname": "impkvm1",
+  "port": "2210",
+  "target": "/etc/puppetlabs/code/environments/production/modules/monit",
+  "ignore": [
+    ".remote-sync.json",
+    ".git/**"
+  ],
+  "username": "root",
+  "keyfile": "/home/pkrebs/.ssh/atom_rsa",
+  "watch": [],
+  "transport": "scp"
+}
