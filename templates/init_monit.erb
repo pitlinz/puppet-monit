@@ -1,0 +1,72 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          monit
+# Required-Start:    $remote_fs
+# Required-Stop:     $remote_fs
+# Should-Start:      $all
+# Should-Stop:       $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: service and resource monitoring daemon
+# Description:       monit is a utility for managing and monitoring
+#                    processes, programs, files, directories and filesystems
+#                    on a Unix system. Monit conducts automatic maintenance
+#                    and repair and can execute meaningful causal actions
+#                    in error situations.
+### END INIT INFO
+
+set -e
+
+DAEMON=/usr/local/bin/monit
+CONFIG=/etc/monit/monitrc
+NAME=monit
+DESC="daemon monitor"
+PIDFILE="/var/run/$NAME.pid"
+MONIT_OPTS="-p ${PIDFILE}"
+
+# Check if DAEMON binary exist
+[ -f $DAEMON ] || exit 0
+
+MONIT_OPTS="-c $CONFIG $MONIT_OPTS"
+
+case "$1" in
+  start)
+        $DAEMON $MONIT_OPTS -d 60
+    ;;
+  stop)
+        $DAEMON $MONIT_OPTS quit
+        if [ -f $PIDFILE ]; then
+                PID=`cat $PIDFILE`;
+                kill -9 $PID
+                rm $PIDFILE
+        fi
+    ;;
+  reload)
+        $DAEMON $MONIT_OPTS reload
+    ;;
+  restart|force-reload)
+        $0 stop
+        $0 start
+    ;;
+  syntax)
+    $DAEMON $MONIT_OPTS -t
+    ;;
+  status)
+        if [ ! -f $PIDFILE ]; then
+                echo "monit is not running"
+                exit 1
+        fi
+        PID=`cat $PIDFILE`;
+        if [ `ps -aux | grep $DAEMON | grep -c $PID` -lt 1 ]; then
+                echo "monit seems to be crashed"
+                exit 2
+        fi
+    $DAEMON $MONIT_OPTS status
+    ;;
+  *)
+    echo "Usage: /etc/init.d/$NAME {start|stop|reload|restart|force-reload|syntax|status}"
+    ;;
+esac
+
+exit 0

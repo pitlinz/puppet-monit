@@ -1,0 +1,10 @@
+[Unit]
+Description=service and resource monitoring daemon
+Documentation=man:monit(1)
+
+[Service]
+ExecStart=/usr/local/bin/monit -c /etc/monit/monitrc -p /var/run/monit.pid
+PIDFile=/var/run/monit.pid
+
+[Install]
+WantedBy=multi-user.target

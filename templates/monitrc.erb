@@ -7,7 +7,7 @@
 #
 set daemon <%= @pool_interval %>
 #   with start delay 240
-with start delay <%= @start_delay %> 
+with start delay <%= @start_delay %>
 
 ## Set syslog logging with the 'daemon' facility. If the FACILITY option is
 ## omitted, Monit will use 'user' facility by default. If you want to log to
@@ -32,21 +32,21 @@ set idfile /var/lib/monit/id
 #
 set statefile /var/lib/monit/state
 
-<%- if http_port != '' -%>
+<%- if @http_port != '' -%>
 set httpd port <%= @http_port -%>
 	<%- if @http_secret != '' then -%>
 		allow <%= @http_user %>:<%= @http_secret %>
-	<%- else -%><%- if @allowips.size != 0 then -%><% allowips.to_a.each do |ip| -%>
+	<%- else -%><%- if @allowips.size != 0 then -%><% @allowips.to_a.each do |ip| -%>
 		allow <%= ip %>
 	<%- end -%><%- else -%>
 		allow localhost
-		<%- if @ipaddress != '' then -%>allow <%= ipaddress %><%- end -%>
+		<%- if @ipaddress != '' then -%>allow <%= @ipaddress %><%- end -%>
 	<%- end -%><%- end -%>
 <%- end %>
 
 <%- if @mailserver.size != 0 then -%>
 set mailserver
-	<% mailserver.to_a.each do |server| -%>
+	<% @mailserver.to_a.each do |server| -%>
 		<%= server %>
 	<% end -%>
 <%- else -%>
@@ -87,4 +87,4 @@ set mmonit <%= @mmoniturl %>
 
 
 # Include settings from other files
-include <%= monitconf %>/*.conf
+include <%= @monitconf %>/*.conf

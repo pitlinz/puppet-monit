@@ -20,7 +20,7 @@
 #
 
 class monit(
-    $version        = '5.25.1',
+    $version        = '5.25.2',
     $dwnlpqath      = 'https://bitbucket.org/tildeslash/monit/downloads/',
 
     $alert          = 'root@localhost',
@@ -39,8 +39,11 @@ class monit(
 
     $checkpuppet    = true,
 
-    $syswait        = 80,
-    $memoryusage    = '90%'
+    $memoryusage    = '90%',
+    $swapusage      = '50%',
+    $cpu_user       = '90%',
+    $cpu_system     = '70%',
+    $cpu_wait       = '80%'
 ) {
 
     if !defined(Package['wget']) {
@@ -98,13 +101,18 @@ class monit(
         command     => "/bin/tar -xzf ${_dwnltarget}",
         cwd         => '/usr/src/downloads',
         refreshonly => true,
-        notify      => Exec["cp_${_dwnltarget}"]
+        notify      => Exec["cp_${_dwnltarget}","cp_${_dwnltarget}_man"]
     }
 
     exec{"cp_${_dwnltarget}":
         command     => "/bin/cp /usr/src/downloads/monit-${version}/bin/* /usr/local/bin/",
         refreshonly => true,
         notify      => Service['monit']
+    }
+
+    exec{"cp_${_dwnltarget}_man":
+        command     => "/bin/cp /usr/src/downloads/monit-${version}/man/man1/*  /usr/share/man/man1/",
+        refreshonly => true,
     }
 
 
@@ -127,8 +135,16 @@ class monit(
             command => "/usr/sbin/update-rc.d monit defaults 90",
             creates => "/etc/rc5.d/S05monit",
             before  	=> Service['monit'],
-    #		    refreshonly	=> true,
+            #refreshonly	=> true,
             unless		=> "/bin/ls /etc/rc5.d/S0* | /bin/grep -c monit"
+        }
+    }
+
+    if $::lsbdistid == 'Ubuntu' {
+        if (0.0 + $::operatingsystemrelease) > 16.03 {
+            file {"/lib/systemd/system/monit.service":
+                content => template('monit/systemd.monit.service.erb');
+            }
         }
     }
 
@@ -187,10 +203,11 @@ class monit(
 
     # system check
 
-    $load1Alarm = $::processorcount + 1
-    $load5Alarm	= $::processorcount * 2 + 2
+    $load1alarm = $::processorcount + 1
+    $load5alarm	= $::processorcount * 2 + 2
 
     file { "${monitconf}/system.conf":
+        ensure => present,
         content => template("monit/check_system.erb"),
         before  => Service['monit']
     }

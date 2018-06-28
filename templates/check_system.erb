@@ -1,12 +1,15 @@
-# Configuration snippet for <%= fqdn %>
+# Configuration snippet for <%= @fqdn %>
+#
+# source monit/check_system.erb
 #
 # This file is handled by puppet, all local modifications will be lost
+#
 
-check system  <%= fqdn %>
-    if loadavg (1min) > <%= load1Alarm %> then alert
-    if loadavg (5min) > <%= load5Alarm %> then alert
-    if memory usage > 90% then alert
-    if swap usage > 70% then alert
-    if cpu usage (user) > 90% then alert
-    if cpu usage (system) > 90% then alert
-    if cpu usage (wait) > 60% then alert
+check system  <%= @fqdn %>
+    if loadavg (1min) > <%= @load1alarm %> then alert
+    if loadavg (5min) > <%= @load5alarm %> then alert
+    if memory usage > <%= @memoryusage %> then alert
+    if swap usage > <%= @swapusage %> then alert
+    if cpu usage (user) > <%= @cpu_user %>  then alert
+    if cpu usage (system) > <%= @cpu_system %> then alert
+    if cpu usage (wait) > <%= @cpu_wait %> then alert
