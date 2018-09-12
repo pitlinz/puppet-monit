@@ -1,16 +1,15 @@
-# Configuration snippet for <%= name %>
-# 
+# Configuration snippet for <%= @name %>
+#
 # This file is handled by puppet, all local modifications will be lost
 
-check program <%= name %>
-  with path "<%= scriptpath %> <%= scriptparams %>"
-<% if @depends_on.size != 0 then -%>
-	<% depends_on.to_a.each do |othercheck| -%>
-		depends on <%= othercheck %>
-	<% end -%>
-<% end -%>
-<% if @customlines.size != 0 then -%>
-	<% customlines.to_a.each do |line| -%>
-		<%= line %>
-	<% end -%>
-<% end -%>  
+check program <%= @name %>
+  with path "<%= @scriptpath %> <%= @scriptparams %>"
+<% if @depends_on.size != 0 then -%><% @depends_on.to_a.each do |othercheck| -%>
+  depends on <%= othercheck %>
+<% end -%><% end -%>
+<% if @mgroups.size != 0 then -%><%- @mgroups.to_a.each do |mgroup| -%>
+  group <%= mgroup %>
+<%- end -%><%- end -%>
+<% if @customlines.size != 0 then -%><% @customlines.to_a.each do |line| -%>
+  <%= line %>
+<% end -%><% end -%>

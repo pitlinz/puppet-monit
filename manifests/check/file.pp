@@ -28,9 +28,10 @@ define monit::check::file(
 	$ensure=present,
 	$filepath=undef,
 	$start=undef,
-	$start_extras="",
+	$start_extras='',
 	$stop=undef,
-	$stop_extras="",
+	$stop_extras='',
+    $mgroups=[],
 	$customlines=[]
 ) {
 

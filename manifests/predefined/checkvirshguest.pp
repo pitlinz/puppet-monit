@@ -6,7 +6,7 @@ define monit::predefined::checkvirshguest(
 	$intip	= undef,
 ) {
 
-	monit::check::file{"virsh_${name}_xml":
+	::monit::check::file{"virsh_${name}_xml":
 		filepath => "/etc/libvirt/qemu/${name}.xml",
 		customlines => ["if failed checksum then alert"],
 	}

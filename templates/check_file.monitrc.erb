@@ -1,18 +1,18 @@
-# Configuration snippet for <%= name %>
-# 
+# Configuration snippet for <%= @name %>
+#
 # This file is handled by puppet, all local modifications will be lost
 
-check file <%= name %>
-  with path "<%= filepath %>"
+check file <%= @name %>
+  with path "<%= @filepath %>"
 <%- if @start -%>
-  start program = "<%= start %>" <%= start_extras %>
+  start program = "<%= @start %>" <%= @start_extras %>
 <%- end -%>
 <%- if @stop -%>
-  stop program  = "<%= stop %>" <%= stop_extras %>
+  stop program  = "<%= @stop %>" <%= @stop_extras %>
 <%- end -%>
   if does not exist for 5 cycles then alert
 <%- if @customlines.size != 0 then -%>
-	<%- customlines.to_a.each do |line| -%>
+	<%- @customlines.to_a.each do |line| -%>
 	  <%= line %>
 	<% end -%>
-<% end -%>  
+<% end -%>

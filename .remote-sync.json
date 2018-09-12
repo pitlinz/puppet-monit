@@ -3,7 +3,7 @@
     "title": "Remote Sync"
   },
   "uploadOnSave": true,
-  "useAtomicWrites": false,
+  "useAtomicWrites": true,
   "deleteLocal": false,
   "hostname": "impkvm1",
   "port": "2210",

@@ -18,9 +18,9 @@
 
 set -e
 
-DAEMON=/usr/local/bin/monit
-CONFIG=/etc/monit/monitrc
 NAME=monit
+DAEMON="/usr/local/bin/${NAME}"
+CONFIG=/etc/monit/monitrc
 DESC="daemon monitor"
 PIDFILE="/var/run/$NAME.pid"
 MONIT_OPTS="-p ${PIDFILE}"
@@ -50,22 +50,25 @@ case "$1" in
         $0 start
     ;;
   syntax)
-    $DAEMON $MONIT_OPTS -t
+        $DAEMON $MONIT_OPTS -t
     ;;
   status)
         if [ ! -f $PIDFILE ]; then
-                echo "monit is not running"
+                echo "no pidfile"
                 exit 1
         fi
         PID=`cat $PIDFILE`;
-        if [ `ps -aux | grep $DAEMON | grep -c $PID` -lt 1 ]; then
-                echo "monit seems to be crashed"
+        if [ `ps -aux | grep $NAME | grep -c $PID` -lt 1 ]; then
+                echo ""
                 exit 2
         fi
-    $DAEMON $MONIT_OPTS status
+        exit 0
+    ;;
+  validate)
+        $DAEMON $MONIT_OPTS validate
     ;;
   *)
-    echo "Usage: /etc/init.d/$NAME {start|stop|reload|restart|force-reload|syntax|status}"
+        echo "Usage: /etc/init.d/$NAME {start|stop|reload|restart|force-reload|syntax|status|validate}"
     ;;
 esac
 

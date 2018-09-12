@@ -1,0 +1,18 @@
+# Configuration snippet for <%= @name %>
+#
+# This file is handled by puppet, all local modifications will be lost
+
+check network <%= @name %>
+  with interface <%= @interface %>
+<%- if @depends_on.size != 0 then -%><%- @depends_on.to_a.each do |dependscheck| -%>
+  depends on <%= dependscheck %>
+<%- end -%><% end -%>
+<% if @mgroups.size != 0 then -%><%- @mgroups.to_a.each do |mgroup| -%>
+  group <%= mgroup %>
+<%- end -%><%- end -%>
+  if failed link then alert
+  if changed link then alert
+  if saturation > <%= @saturation %> then alert
+<%- if @customlines.size != 0 then -%><%- @customlines.to_a.each do |line| -%>
+  <%= line %>
+<% end -%><%- end -%>

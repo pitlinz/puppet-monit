@@ -27,24 +27,26 @@
 #   }
 # (end)
 
-define monit::check::process($ensure=present, $process=$name,
-                             $pidfile="/var/run/$name.pid",
-                             $start="/etc/init.d/$name start",
-                             $start_extras="",
-                             $stop="/etc/init.d/$name stop",
-                             $stop_extras="",
-                             $depends_on=[],
-                             $customlines=[]
+define monit::check::process(
+    $ensure         = present,
+    $process        = $name,
+    $pidfile        = "/var/run/$name.pid",
+    $start          = "/etc/init.d/$name start",
+    $start_extras   = '',
+    $stop           = "/etc/init.d/$name stop",
+    $stop_extras    = '',
+    $depends_on     = [],
+    $mgroups        = [],
+    $customlines    = []
 ) {
     include monit
 
 	file {"${::monit::monitconf}/process_$name.conf":
 		ensure  => $ensure,
-		owner   => "root",
-		group   => "root",
-		mode    => 0400,
-		content => template("monit/check_process.monitrc.erb"),
-		notify  => Service["monit"],
+		owner   => 'root',
+		group   => 'root',
+		mode    => '0400',
+		content => template('monit/check_process.monitrc.erb'),
+		notify  => Service['monit'],
 	}
 }
-

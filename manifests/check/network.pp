@@ -1,4 +1,4 @@
-# Define: monit::check::host
+# Define: monit::check::network
 # Creates a monit host check
 #
 #
@@ -17,26 +17,26 @@
 #   - Package["monit"]
 #
 
-
-define monit::check::host(
+define monit::check::network(
     $ensure         = present,
-    $chkaddress     = undef,
-    $start          = undef,
-    $start_extras   = '',
-    $stop           = undef,
-    $stop_extras    = '',
+    $interface      = 'eth0',
+    $address        = undef,
     $depends_on     = [],
+    $saturation     = "90%",
+    $customlines    = [
+                "if download > 100 MB/s then alert",
+                "if total uploaded > 1 GB in last hour then alert"
+        ],
     $mgroups        = [],
-    $customlines    = ''
 ) {
-	include monit
+        include monit
 
-  	file {"${::monit::monitconf}/host_$name.conf":
-	    ensure  => $ensure,
-	    owner   => 'root',
-	    group   => 'root',
-	    mode    => '0400',
-	    content => template('monit/check_host.monitrc.erb'),
-	    notify  => Service['monit'],
-	}
+        file {"${::monit::monitconf}/net_$name.conf":
+            ensure  => $ensure,
+            owner   => "root",
+            group   => "root",
+            mode    => "0400",
+            content => template("monit/check_network.monitrc.erb"),
+            notify  => Service["monit"],
+        }
 }

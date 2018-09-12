@@ -37,6 +37,7 @@ define monit::check::device(
   $emergency_alert    = "",
   $emergency_usage    = false,
 
+  $mgroups=[],
   $customlines        = [],
 
   $mismatch_cnt_id    = false, # if you add a number here /sys/block/md<%= mismatch_cnt_id %> is checked

@@ -1,20 +1,23 @@
-# Configuration snippet for <%= name %>
-# 
+# Configuration snippet for <%= @name %>
+#
 # This file is handled by puppet, all local modifications will be lost
 
-check process <%= name %>
+check process <%= @name %>
 <% if @pidfile != '' then -%>
-  	with pidfile "<%= pidfile %>"
+  	with pidfile "<%= @pidfile %>"
 <%- else -%>
-	matching  <%= name %>
+	matching  <%= @name %>
 <%- end -%>
-	start program = "<%= start %>" <%= start_extras %>
-	stop program  = "<%= stop %>" <%= stop_extras %>
-<% if @depends_on.size != 0 then -%><%- depends_on.to_a.each do |othercheck| -%>
-	depends on <%= othercheck %>
+	start program = "<%= @start %>" <%= @start_extras %>
+	stop program  = "<%= @stop %>" <%= @stop_extras %>
+<% if @depends_on.size != 0 then -%><%- @depends_on.to_a.each do |depends| -%>
+	depends on <%= depends %>
+<%- end -%><%- end -%>
+<% if @mgroups.size != 0 then -%><%- @mgroups.to_a.each do |mgroup| -%>
+        group <%= mgroup %>
 <%- end -%><%- end -%>
 <% if @customlines.size != 0 then -%>
-	<%- customlines.to_a.each do |line| -%>
+	<%- @customlines.to_a.each do |line| -%>
 	<%= line %>
 	<%- end -%>
-<% end %>  
+<% end %>

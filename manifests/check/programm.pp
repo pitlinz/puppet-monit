@@ -11,25 +11,26 @@
 
 
 define monit::check::programm(
-		  $ensure       = present,
-		  $scriptpath   = "",
-		  $scriptparams = "",
-		  $start="",
-		  $start_extras="",
-		  $stop="",
-		  $stop_extras="",
-		  $depends_on=[],
-		  $customlines=""
+    $ensure         = present,
+    $scriptpath     = '',
+    $scriptparams   = '',
+    $start          = '',
+    $start_extras   = '',
+    $stop           = '',
+    $stop_extras    = '',
+    $depends_on     = [],
+    $mgroups        = [],
+    $customlines    = []
 ) {
 
 	include monit
 
 	file {"${::monit::monitconf}/programm_$name.conf":
 	    ensure  => $ensure,
-	    owner   => "root",
-	    group   => "root",
-	    mode    => 0400,
-	    content => template("monit/check_programm.monitrc.erb"),
-	    notify  => Service["monit"],
+	    owner   => 'root',
+	    group   => 'root',
+	    mode    => '0400',
+	    content => template('monit/check_programm.monitrc.erb'),
+	    notify  => Service['monit'],
 	}
 }

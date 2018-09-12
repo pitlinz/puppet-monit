@@ -1,23 +1,22 @@
-# Configuration snippet for <%= name %>
-# 
+# Configuration snippet for <%= @name %>
+#
 # This file is handled by puppet, all local modifications will be lost
 
-check host <%= name %>
-  with address <%= chkaddress %>
+check host <%= @name %>
+    with address <%= @chkaddress %>
 <% if @start then -%>
-  start program = "<%= start %>" <%= start_extras %>
+    start program = "<%= @start %>" <%= @start_extras %>
 <% end -%>
 <% if @stop then -%>
-  stop program  = "<%= stop %>" <%= stop_extras %>
+    stop program  = "<%= @stop %>" <%= @stop_extras %>
 <% end -%>
-<% if @depends_on.size != 0 then -%>
-	<% depends_on.to_a.each do |dependscheck| -%>
-		depends on <%= dependscheck %>
-	<% end -%>
-<% end -%>
-	if failed icmp type echo count 3 with timeout 30 seconds then alert
-<% if @customlines.size != 0 then -%>
-	<% customlines.to_a.each do |line| -%>
-	  <%= line %>
-	<% end -%>
-<% end -%>  
+<% if @depends_on.size != 0 then -%><% @depends_on.to_a.each do |dependscheck| -%>
+    depends on <%= dependscheck %>
+<% end -%><% end -%>
+<% if @mgroups.size != 0 then -%><%- @mgroups.to_a.each do |mgroup| -%>
+    group <%= mgroup %>
+<%- end -%><%- end -%>
+    if failed icmp type echo count 3 with timeout 30 seconds then alert
+<% if @customlines.size != 0 then -%><% @customlines.to_a.each do |line| -%>
+    <%= line %>
+<% end -%><% end -%>
