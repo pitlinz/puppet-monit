@@ -1,9 +1,16 @@
 [Unit]
 Description=service and resource monitoring daemon
+After=network.target
 Documentation=man:monit(1)
 
 [Service]
+Type=simple
+KillMode=process
 ExecStart=/usr/local/bin/monit -c /etc/monit/monitrc -p /var/run/monit.pid
+ExecStop=/usr/local/bin/monit quit
+ExecReload=/usr/local/bin/monit reload
+Restart = on-abnormal
+StandardOutput=null
 PIDFile=/var/run/monit.pid
 
 [Install]

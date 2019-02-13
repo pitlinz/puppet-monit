@@ -109,7 +109,7 @@ class monit(
     }
 
     exec{"cp_${_dwnltarget}_man":
-        command     => '/bin/cp /usr/src/downloads/monit-${version}/man/man1/*  /usr/share/man/man1/',
+        command     => "/bin/cp /usr/src/downloads/monit-${version}/man/man1/*  /usr/share/man/man1/",
         refreshonly => true,
         notify      => Exec["rm_${_dwnltarget}"]
     }
@@ -145,32 +145,35 @@ class monit(
         #unless		=> '/bin/ls /etc/rc5.d/S0* | /bin/grep -c monit'
     }
 
+    if ($::lsbdistid == 'Ubuntu') and ((0.0 + $::operatingsystemrelease) > 16.04) {
+        file {'/lib/systemd/system/monit.service':
+            ensure => present,
+            content => template('monit/systemd.monit.service.erb'),
+            notify  => Exec['systemctl enable monit']
+        }
 
-    if $::lsbdistid == 'Ubuntu' {
-        if (0.0 + $::operatingsystemrelease) > 16.03 {
-            file {'/lib/systemd/system/monit.service':
-                content => template('monit/systemd.monit.service.erb');
-            }
-
-            $monit_start	= '/usr/sbin/service monit start'
-            $monit_restart	= '/usr/sbin/service monit restart'
-            $monit_stop	    = '/usr/sbin/service monit stop'
-
-        } else {
-            $monit_start	= '/etc/init.d/monit start'
-            $monit_restart	= '/etc/init.d/monit restart'
-            $monit_stop	    = '/etc/init.d/monit stop'
+        exec {'systemctl enable monit':
+            command => '/bin/systemctl enable monit',
+            refreshonly => true
         }
     }
 
+    exec {'monit_lo_input':
+        command => '/sbin/iptables -A INPUT -i lo -p tcp --dport 2812 -j ACCEPT',
+        unless  => '/sbin/iptables -L INPUT -nv | /bin/grep lo | /bin/grep 2812 | /bin/grep ACCEPT'
+    }
+
+    # $monit_start	= '/etc/init.d/monit start'
+    # $monit_restart	= '/etc/init.d/monit restart'
+    # $monit_stop	    = '/etc/init.d/monit stop'
+
     # The service
     service { 'monit':
-        provider=> 'init',
         ensure  => running,
         require => $monitrcreq,
-        start	=> $monit_start,
-        restart	=> $monit_restart,
-        stop	=> $monit_stop
+        # start	=> $monit_start,
+        # restart	=> $monit_restart,
+        # stop	=> $monit_stop
     }
 
     # How to tell monit to reload its configuration
