@@ -38,40 +38,40 @@ class monit(
     $cpu_wait       = '80%'
 ) {
 
-    if !defined(Package['wget']) {
-        package{'wget':
-            ensure => latest
-        }
+  if !defined(Package['wget']) {
+    package{'wget':
+      ensure => latest
     }
+  }
 
-    case $::operatingsystem {
-        'debian','ubuntu': {
-            case $::architecture {
-                'amd64': {
-                    $_dwnlurl = "${dwnlpqath}monit-${version}-linux-x64.tar.gz"
-                }
-                default: {
-                    $_dwnlurl = $_dwnlurl = "${dwnlpqath}monit-${version}.tar.gz"
-                }
-            }
-
-            $monitrc    = '/etc/monit/monitrc'
-            $monitrcreq = Package['wget']
-            $monitconf  = '/etc/monit/conf.d'
-
-            package{'monit':
-                ensure => absent,
-                before => File['/etc/init.d/monit']
-            }
+  case $::operatingsystem {
+    'debian','ubuntu': {
+      case $::architecture {
+        'amd64': {
+          $_dwnlurl = "${dwnlpqath}monit-${version}-linux-x64.tar.gz"
         }
-
         default: {
-            $_dwnlurl   = "${dwnlpqath}monit-${version}.tar.gz"
-            $monitrc    = '/etc/monit/monitrc'
-            $monitrcreq = Exec["wget_${_dwnlurl}"]
-            $monitconf  = '/etc/monit/conf.d'
+          $_dwnlurl = "${dwnlpqath}monit-${version}.tar.gz"
         }
+      }
+
+      $monitrc    = '/etc/monit/monitrc'
+      $monitrcreq = Package['wget']
+      $monitconf  = '/etc/monit/conf.d'
+
+      package{'monit':
+          ensure => absent,
+          before => File['/etc/init.d/monit']
+      }
     }
+
+    default: {
+      $_dwnlurl   = "${dwnlpqath}monit-${version}.tar.gz"
+      $monitrc    = '/etc/monit/monitrc'
+      $monitrcreq = Exec["wget_${_dwnlurl}"]
+      $monitconf  = '/etc/monit/conf.d'
+    }
+  }
 
     if !defined(File['/usr/src/downloads']) {
         file{'/usr/src/downloads':

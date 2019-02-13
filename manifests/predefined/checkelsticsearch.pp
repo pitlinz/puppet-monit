@@ -8,7 +8,8 @@
 #
 class monit::predefined::checkelsticsearch(
   $ensure		= present,
-  $pidfile		= '/var/run/elasticsearch/elasticsearch.pid',
+  $pidfile	= '/var/run/elasticsearch/elasticsearch.pid',
+  $ip       = '127.0.0.1',
   $port			= "9200"
 ) {
 
@@ -18,8 +19,8 @@ class monit::predefined::checkelsticsearch(
     	start       => "/etc/init.d/elasticsearch start",
     	stop        => "/etc/init.d/elasticsearch stop",
     	customlines => [
-      		"if failed host 127.0.0.1 port $port type tcp then alert",
-      		"if failed host 127.0.0.1 port $port type tcp for 3 cycles then restart",
+      		"if failed host $ip port $port type tcp then alert",
+      		"if failed host $ip port $port type tcp for 3 cycles then restart",
       		"if 5 restarts within 20 cycles then timeout"
     	],
   	}
