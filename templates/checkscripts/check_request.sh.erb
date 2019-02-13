@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# check a request with curl
+# 
+
+. /etc/environment
+
+DOMAIN="<%= @doamin %>"
+URL="<%= @url %>"
+
+CURLOPT="-sfIk"
+CURLOPT="$CURLOPT -H \"Host: ${DOMAIN}\""
+CURLOPT="$CURLOPT -w \"%{http_code}\\n\""
+CURLOPT="$CURLOPT -o /dev/null"
+CURLOPT="$CURLOPT --connect-timeout 2"
+echo "curl $CURLOPT $URL"
+RETCODE=`curl $CURLOPT $URL`
+
+echo "return code: $RETCODE"
+
+if [ "x${RETCODE}" == "x" -o $RETCODE -lt 200 ]; then
+	exit 1
+elif [ $RETCODE -gt 199 -a $RETCODE -lt 400 ]; then
+	exit 0
+elif [ $RETCODE -gt 399 -a $RETCODE -lt 500 ]; then
+	exit 4
+elif [ $RETCODE -gt 499 ]; then
+	exit 5
+fi

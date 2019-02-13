@@ -4,7 +4,7 @@
   "deleteLocal": false,
   "hostname": "puppet.w4c.at",
   "port": "2240",
-  "target": "/etc/puppet/environments/prodv2/modules/monit",
+  "target": "/etc/puppet/environments/prodv2/modules/pitlinz_apache",
   "ignore": [
     ".remote-sync.json",
     ".git/**"

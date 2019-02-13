@@ -9,16 +9,8 @@
 # To set any of the following, simply set them as variables in your manifests
 # before the class is included, for example:
 #
-# $monit_enable_httpd = yes
-# $monit_httpd_port = 8888
-# $monit_secret='something secret, something safe'
-# $monit_alert='someone@example.org'
-# $monit_mailserver='mail.example.org'
-# $monit_pool_interval='120'
+# forged by Peter Krebs <pitlinz@sourceforge.net>
 #
-# include monit
-#
-
 class monit(
     $version        = '5.25.2',
     $dwnlpqath      = 'https://bitbucket.org/tildeslash/monit/downloads/',

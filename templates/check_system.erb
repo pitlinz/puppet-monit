@@ -1,0 +1,12 @@
+# Configuration snippet for <%= @fqdn %>
+#
+# This file is handled by puppet, all local modifications will be lost
+
+check system  <%= @fqdn %>
+    if loadavg (1min) > <%= @load1Alarm %> then alert
+    if loadavg (5min) > <%= @load5Alarm %> then alert
+    if memory usage > <%= @memoryusage %> then alert
+    if swap usage > 70% then alert
+    if cpu usage (user) > 90% then alert
+    if cpu usage (system) > 90% then alert
+    if cpu usage (wait) > <%= @syswait %>% then alert

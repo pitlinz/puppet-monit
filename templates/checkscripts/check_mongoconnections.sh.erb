@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# check the number of mongo connections
+#
+# file handeled by puppet
+#
+
+if [ ! -f /usr/bin/mongo ]; then
+	echo "no mongo client"
+	exit 4
+fi
+
+CURCON=`printf "db.serverStatus().connections\nexit" | mongo | grep { | cut -f2 -d':' | cut -f1 -d','`
+MAXCON=`printf "db.serverStatus().connections\nexit" | mongo | grep { | cut -f3 -d':' | cut -f1 -d','`
+
+
